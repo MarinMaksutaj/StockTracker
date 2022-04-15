@@ -1,14 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".NavTabBarFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+    <Button
+        android:id="@+id/chartNavButton"
+        android:layout_margin="15dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/chart_image"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/searchNavButton"
+        app:layout_constraintHorizontal_weight="1"
+        android:onClick="chartNav"
+        />
+    <Button
+        android:id="@+id/searchNavButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/search_image"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/newsNavButton"
+        app:layout_constraintLeft_toRightOf="@id/chartNavButton"
+        app:layout_constraintHorizontal_weight="1"
+        android:onClick="searchNav"
+        />
+    <Button
+        android:id="@+id/newsNavButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/news_image"
+        app:layout_constraintRight_toLeftOf="@id/settingsNavButton"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/searchNavButton"
+        app:layout_constraintHorizontal_weight="1"
+        android:onClick="newsNav"
+        />
+    <Button
+        android:id="@+id/settingsNavButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/settings_image"
+        app:layout_constraintRight_toLeftOf="@id/helpNavButton"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/newsNavButton"
+        app:layout_constraintHorizontal_weight="1"
+        android:onClick="settingsNav"
+        />
+    <Button
+        android:id="@+id/helpNavButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/manual_image"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/settingsNavButton"
+        app:layout_constraintHorizontal_weight="1"
+        android:onClick="helpNav"
+        />
 
-</FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
