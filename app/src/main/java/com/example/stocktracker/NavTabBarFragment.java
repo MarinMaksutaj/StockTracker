@@ -8,7 +8,9 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -63,15 +65,10 @@ public class NavTabBarFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_nav_tab_bar, container, false);
-        Button chartButton = (Button) v.findViewById(R.id.chartNavButton);
-        Button searchButton = (Button) v.findViewById(R.id.searchNavButton);
-        Button newsButton = (Button) v.findViewById(R.id.newsNavButton);
-        Button settingsButton = (Button) v.findViewById(R.id.settingsNavButton);
-        Button manualButton = (Button) v.findViewById(R.id.helpNavButton);
 
-        int width = chartButton.getWidth();
-        System.out.println(width); // read width to set up buttons height.
+       // read width to set up buttons height.
         return v;
+
     }
 
     public void setContainerActivity(Activity containerActivity){

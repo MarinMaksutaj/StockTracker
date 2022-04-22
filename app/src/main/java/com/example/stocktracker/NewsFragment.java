@@ -1,6 +1,13 @@
 package com.example.stocktracker;
 
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft_10;
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -8,6 +15,14 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -60,10 +75,74 @@ public class NewsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_news, container, false);
+        View v = inflater.inflate(R.layout.fragment_news, container, false);
+        //new NewsAPICallManager().execute("ticker to be passed here");
+
+
+        return v;
     }
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
+    }
+
+    private class NewsAPICallManager extends AsyncTask<String, String, String> {
+
+
+        @Override
+        protected String doInBackground(String... params) {
+            //TODO: failed here on doing API call, this is sample code from documentation
+            String uriString = "";
+            URI uri = null;
+            try {
+                uri = new URI("wss://delayed.polygon.io/stocks");
+            } catch (URISyntaxException e) {
+                System.out.println("error with URI");
+                e.printStackTrace();
+            }
+            WebSocketClient mWs = new WebSocketClient( uri, new Draft_10() ){
+                @Override
+                public void onMessage( String message ) {
+                    System.out.println( message );
+                    }
+                @Override
+                public void onOpen( ServerHandshake handshake ) {
+                    System.out.println( "opened connection" );
+                    }
+                @Override
+                public void onClose( int code, String reason, boolean remote ) {
+                    System.out.println( "closed connection" );
+                    }
+                @Override
+                public void onError( Exception ex ) {
+                    ex.printStackTrace();
+                    }
+            };
+
+            //open websocket
+            mWs.connect();
+            JSONObject auther = new JSONObject();
+            try {
+                auther.put("action", "auth");
+                auther.put("params", R.string.API_KEY);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String message = auther.toString();
+            mWs.send(message); //TODO: add check for mWs != null before trying  this, to avoid crashing on new devices
+
+            JSONObject suber = new JSONObject();
+            try {
+                suber.put("action", "subscribe");
+                suber.put("params", "T.AAPL");
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            message = suber.toString();
+            mWs.send(message);
+
+            return null;
+        }
     }
 }
