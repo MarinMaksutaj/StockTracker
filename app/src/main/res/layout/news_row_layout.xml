@@ -11,10 +11,10 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         android:textSize="24dp"
-        app:layout_constraintRight_toLeftOf="@+id/websiteText"
+        app:layout_constraintRight_toLeftOf="@+id/authorText"
         app:layout_constraintHorizontal_weight="2"/>
     <TextView
-        android:id="@+id/websiteText"
+        android:id="@+id/authorText"
         android:layout_width="0dp"
         android:layout_height="60dp"
         app:layout_constraintTop_toTopOf="parent"
