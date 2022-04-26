@@ -1,5 +1,12 @@
 package com.example.stocktracker;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.os.Bundle;
 
@@ -9,6 +16,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -59,6 +68,37 @@ public class ChartFragment extends Fragment {
         }
         // get the webview
 
+    }
+
+    @Override
+    public void onResume() {
+        // grab the stock symbol from the file
+        // read the file
+        super.onResume();
+        File file = new File(containerActivity.getFilesDir(), "stocks.txt");
+        FileReader reader = null;
+        try {
+            reader = new FileReader(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BufferedReader br = new BufferedReader(reader);
+        ArrayList stockSymbol = new ArrayList();
+        while (true) {
+            try {
+                String line = br.readLine();
+                if (line == null) {
+                    break;
+                }
+                stockSymbol.add(line);
+                // update listView with the stock symbol
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        ListView listView = (ListView) containerActivity.findViewById(R.id.stockListView);
+        listView.setAdapter(new ArrayAdapter<String>(containerActivity, android.R.layout.simple_list_item_1, stockSymbol));
     }
 
     @Override

@@ -5,5 +5,6 @@
     <string name="HelpBody">This fragment will help user have an easy grasp of how to use the app!</string>
     <string name="API_KEY">KzgmVQZuf5ay0ucp_wnIkgNqQ1h_UKMF</string>
     <string name="share_button">Share</string>
+    <string name="search_text">Search for a ticker symbol to add to your list.</string>
 
 </resources>
