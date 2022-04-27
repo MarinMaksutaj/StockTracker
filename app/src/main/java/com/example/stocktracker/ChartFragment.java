@@ -11,15 +11,20 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.app.Activity;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import android.os.StrictMode;
@@ -138,9 +143,10 @@ public class ChartFragment extends Fragment {
         // update the webview
         WebView webView = view.findViewById(R.id.webview);
         // do an API call to polygon api to get the stock data
-        String apiCall = "https://api.polygon.io/v2/aggs/ticker/" + stockSymbol + "/range/1/minute/2021-07-22/2021-07-22?adjusted=true&sort=asc&limit=50&apiKey=KzgmVQZuf5ay0ucp_wnIkgNqQ1h_UKMF";
+        String apiCall = "https://api.polygon.io/v2/aggs/ticker/" + stockSymbol + "/range/1/minute/2021-07-22/2021-07-22?adjusted=true&sort=asc&limit=50&apiKey="+getResources().getString(R.string.API_KEY);
         // use a thread to make the api call
         new Thread(new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void run() {
                 try {
@@ -167,7 +173,11 @@ public class ChartFragment extends Fragment {
                         JSONObject stockData = data.getJSONObject(i);
                         String time = stockData.getString("t");
                         // convert time from UNIX time to readable time
-                        time = time.substring(0, time.length() - 3);
+                        long unixTime = Long.parseLong(time) / 1000L;
+                        System.out.println(Instant.ofEpochSecond(unixTime ));
+                        Date date = Date.from(Instant.ofEpochSecond(unixTime ));
+                        System.out.println(date.toString());
+                        time = String.valueOf(date.getHours()) +":"+ String.valueOf(date.getMinutes());
                         stockDataString += time + "', ";
                         String low = stockData.getString("l");
                         stockDataString += low + ", ";
