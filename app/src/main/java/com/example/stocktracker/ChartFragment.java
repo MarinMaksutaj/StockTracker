@@ -17,6 +17,8 @@ import java.util.Date;
 
 import android.app.Activity;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -134,6 +136,7 @@ public class ChartFragment extends Fragment {
                 // get the stock symbol
                 String stockSymbol = (String) adapterView.getItemAtPosition(i);
                 updateWebView(stockSymbol);
+                notifyNewsOfStockChange(stockSymbol);
             }
         });
     }
@@ -255,21 +258,25 @@ public class ChartFragment extends Fragment {
             stockSymbol = "AAPL";
         } else {
             FileReader reader = null;
-        try {
-            reader = new FileReader(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        BufferedReader br = new BufferedReader(reader);
-        try {
-            stockSymbol = br.readLine().trim();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            try {
+                reader = new FileReader(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            BufferedReader br = new BufferedReader(reader);
+            try {
+                stockSymbol = br.readLine().trim();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         
+        //draw the correct graph
         updateWebView(stockSymbol);
-        // get the button
+        // notify news fragment we have changed ticker
+        notifyNewsOfStockChange(stockSymbol);
+      
+        
         Button button = view.findViewById(R.id.shareChartButton);
         // add button click listener
         button.setOnClickListener(new View.OnClickListener() {
@@ -308,5 +315,13 @@ public class ChartFragment extends Fragment {
 
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
+    }
+
+    public void notifyNewsOfStockChange(String ticker){
+
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(getString(R.string.stock_graphed), ticker);
+        editor.apply();
     }
 }

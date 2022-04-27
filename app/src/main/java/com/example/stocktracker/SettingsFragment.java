@@ -67,13 +67,13 @@ public class SettingsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
         //Read our current settings to set the buttons in the proper way
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        //set up for first option in settings
         boolean state = sharedPref.getBoolean(getString(R.string.saved_color_setting), false);
         ToggleButton firstSetting = (ToggleButton) view.findViewById(R.id.firstSettingToggle);
         firstSetting.setChecked(state);
         firstSetting.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                System.out.println(firstSetting.isChecked());
                 SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 boolean ans = firstSetting.isChecked();
@@ -81,6 +81,24 @@ public class SettingsFragment extends Fragment {
                 editor.apply();
             }
         });
+
+        //set up for second option in settings
+        boolean lengthy = sharedPref.getBoolean(getString(R.string.length_news), false);
+        ToggleButton secondSetting = (ToggleButton) view.findViewById(R.id.lengthSettingToggle);
+        secondSetting.setChecked(lengthy);
+        secondSetting.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                boolean ans = secondSetting.isChecked();
+                editor.putBoolean(getString(R.string.length_news), ans);
+                editor.apply();
+            }
+        });
+
+
+
         return view;
     }
     public void setContainerActivity(Activity containerActivity){
