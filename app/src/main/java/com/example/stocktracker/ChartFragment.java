@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -125,6 +127,7 @@ public class ChartFragment extends Fragment {
                 // get the stock symbol
                 String stockSymbol = (String) adapterView.getItemAtPosition(i);
                 updateWebView(stockSymbol);
+                notifyNewsOfStockChange(stockSymbol);
             }
         });
     }
@@ -246,25 +249,34 @@ public class ChartFragment extends Fragment {
             stockSymbol = "AAPL";
         } else {
             FileReader reader = null;
-        try {
-            reader = new FileReader(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        BufferedReader br = new BufferedReader(reader);
-        try {
-            stockSymbol = br.readLine().trim();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            try {
+                reader = new FileReader(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            BufferedReader br = new BufferedReader(reader);
+            try {
+                stockSymbol = br.readLine().trim();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         
         updateWebView(stockSymbol);
+        notifyNewsOfStockChange(stockSymbol);
         
         return view;
     }
 
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
+    }
+
+    public void notifyNewsOfStockChange(String ticker){
+
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(getString(R.string.stock_graphed), ticker);
+        editor.apply();
     }
 }

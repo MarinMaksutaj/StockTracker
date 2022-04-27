@@ -13,5 +13,10 @@
     <string name="news_section">In the News section you will receive daily byte sized news concerning the finance world</string>
     <string name="preference_section">Finally, the preferences section gives you the ability to change several properties of the app for a truly unique experience!</string>
     <string name="saved_color_setting">COLOR_SETTING</string>
+    <string name="stock_graphed">STOCK_GRAPHED</string>
+    <string name="length_news">LENGTH_NEWS</string>
+    <string name="first_setting">First setting option</string>
+    <string name="second_setting">Lengthy news list</string>
+
 
 </resources>

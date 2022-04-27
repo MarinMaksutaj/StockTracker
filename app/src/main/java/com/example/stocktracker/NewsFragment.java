@@ -8,6 +8,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -20,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 //import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.HttpClient;
 //import org.apache.commons.io.IOUtils;
@@ -101,29 +104,16 @@ public class NewsFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_news, container, false);
         newsLV = v.findViewById(R.id.newsListView);
         TextView title = v.findViewById(R.id.newsTextView);
-        //TODO: implement to read something  from saved InstanceState
-        String ticker = "AMD";
+        //we read what stock is currently graph, to fetch its news
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        String ticker = sharedPref.getString(getString(R.string.stock_graphed), "AAPL");
+        boolean lengthy = sharedPref.getBoolean(getString(R.string.length_news), false);
+        String lengthNews = "10";
+        if( lengthy ) lengthNews = "20";
+
         title.setText(getResources().getString(R.string.news_title)+ ticker);
 
-
-
-        /***
-        HttpClient httpclient = new DefaultHttpClient();
-        HttpResponse response = httpclient.execute(new HttpGet(urlString));
-        StatusLine statusLine = response.getStatusLine();
-        if(statusLine.getStatusCode() == HttpStatus.SC_OK){
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            response.getEntity().writeTo(out);
-            String responseString = out.toString();
-            out.close();
-            //..more logic
-        } else{
-            //Closes the connection.
-            response.getEntity().getContent().close();
-            throw new IOException(statusLine.getReasonPhrase());
-        }
-         ***/
-        new NewsAPICallManager().execute("ticker to be passed here");
+        new NewsAPICallManager().execute(ticker,lengthNews);
 
 
 
@@ -138,8 +128,8 @@ public class NewsFragment extends Fragment {
 
         @Override
         protected String doInBackground(String... params) {
-            //TODO: failed here on doing API call, this is sample code from documentation
-            String urlString= "https://api.polygon.io/v2/reference/news?ticker=AMD&limit=15&apiKey=KzgmVQZuf5ay0ucp_wnIkgNqQ1h_UKMF";
+            //TODO: failed here on doing API call, this is sample code from documentation"
+            String urlString= "https://api.polygon.io/v2/reference/news?ticker="+params[0]+"&limit="+params[1]+"&apiKey="+getResources().getString(R.string.API_KEY);
             aList = new ArrayList<HashMap<String, String>>();
             JSONObject result = new JSONObject();
             URL url = null;
