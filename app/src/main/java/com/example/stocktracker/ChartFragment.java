@@ -3,6 +3,7 @@ package com.example.stocktracker;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,18 +16,26 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import android.app.Activity;
+
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
+import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -260,7 +269,40 @@ public class ChartFragment extends Fragment {
         }
         
         updateWebView(stockSymbol);
-        
+        // get the button
+        Button button = view.findViewById(R.id.shareChartButton);
+        // add button click listener
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // get the webview
+                System.out.println("clicked");
+                WebView webView = view.findViewById(R.id.webview);
+                // get the bitmap
+                // save the bitmap
+                StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+                StrictMode.setVmPolicy(builder.build());
+                Bitmap bitmap = Bitmap.createBitmap(
+                        webView.getWidth(), webView.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                webView.draw(canvas);
+                // get the uri of the canvas
+                Uri uri = Uri.parse(MediaStore.Images.Media.
+                        insertImage(containerActivity.getContentResolver(),
+                                bitmap, "Title", null));
+                // STEP 3: spawn a new fragment to display a list of contacts from the phone
+                ContactsFragment contactsFragment = new ContactsFragment();
+                Bundle args = new Bundle();
+                args.putString("uri", uri.toString());
+                contactsFragment.setContainerActivity(containerActivity);
+                contactsFragment.setArguments(args);
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.mainContainer, contactsFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
         return view;
     }
 
