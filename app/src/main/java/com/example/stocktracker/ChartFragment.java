@@ -5,6 +5,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -16,8 +21,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,6 +35,8 @@ import android.widget.ListView;
  * create an instance of this fragment.
  */
 public class ChartFragment extends Fragment {
+
+    View view = null;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -102,6 +114,115 @@ public class ChartFragment extends Fragment {
         }
         ListView listView = (ListView) containerActivity.findViewById(R.id.stockListView);
         listView.setAdapter(new ArrayAdapter<String>(containerActivity, android.R.layout.simple_list_item_1, stockSymbol));
+        // add listView item click listener
+        listView.setOnItemClickListener(new ListView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // get the stock symbol
+                String stockSymbol = (String) adapterView.getItemAtPosition(i);
+                updateWebView(stockSymbol);
+            }
+        });
+    }
+
+
+    public void updateWebView(String stockSymbol) {
+        // update the webview
+        WebView webView = view.findViewById(R.id.webview);
+        // do an API call to polygon api to get the stock data
+        String apiCall = "https://api.polygon.io/v2/aggs/ticker/" + stockSymbol + "/range/1/minute/2021-07-22/2021-07-22?adjusted=true&sort=asc&limit=50&apiKey=KzgmVQZuf5ay0ucp_wnIkgNqQ1h_UKMF";
+        // use a thread to make the api call
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL(apiCall);
+                    System.out.println("test");
+                    BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line = null;
+                    while (true) {
+                        try {
+                            if (!((line = br.readLine()) != null)) break;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        sb.append(line);
+                    }
+                    br.close();
+                    String response = sb.toString();
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONArray data = jsonObject.getJSONArray("results");
+                    String stockDataString = "";
+                    for (int i = data.length() - 5; i < data.length(); i++) {
+                        stockDataString += "[ '";
+                        JSONObject stockData = data.getJSONObject(i);
+                        String time = stockData.getString("t");
+                        // convert time from UNIX time to readable time
+                        time = time.substring(0, time.length() - 3);
+                        stockDataString += time + "', ";
+                        String low = stockData.getString("l");
+                        stockDataString += low + ", ";
+                        String open = stockData.getString("o");
+                        stockDataString += open + ", ";
+                        String close = stockData.getString("c");
+                        stockDataString += close + ", ";
+                        String high = stockData.getString("h");
+                        stockDataString += high;
+                        String volume = stockData.getString("v");
+                        stockDataString += "],\n";
+                    }
+                    System.out.println(stockDataString);
+
+                    String html = "<html>\n" +
+                            "  <head>\n" +
+                            "    <script type=\"text/javascript\" src=\"https://www.gstatic.com/charts/loader.js\"></script>\n" +
+                            "    <script type=\"text/javascript\">\n" +
+                            "      google.charts.load('current', {'packages':['corechart']});\n" +
+                            "      google.charts.setOnLoadCallback(drawChart);\n" +
+                            "\n" +
+                            "  function drawChart() {\n" +
+                            "    var data = google.visualization.arrayToDataTable([\n " +
+                             stockDataString +
+                            "      // Treat first row as data as well.\n" +
+                            "    ], true);\n" +
+                            "\n" +
+                            "    var options = {\n" +
+                            "      legend:'none'\n" +
+                            "    };\n" +
+                            "\n" +
+                            "    var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));\n" +
+                            "\n" +
+                            "    chart.draw(data, options);\n" +
+                            "  }\n" +
+                            "    </script>\n" +
+                            "  </head>\n" +
+                            "  <body>\n" +
+                            "    <div id=\"chart_div\" style=\"width: 400px; height: 200px;\"></div>\n" +
+                            "  </body>\n" +
+                            "</html>";
+
+                    // update the webview on the UI thread
+                    containerActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            webView.getSettings().setJavaScriptEnabled(true);
+                            webView.loadData(html, "text/html", "UTF-8");
+                        }
+                    });
+
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
+                // get the response
+
+                // update the webview
+
+
+            }
+        }).start();
+        
+
     }
 
     @Override
@@ -109,43 +230,27 @@ public class ChartFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         
-        View view = inflater.inflate(R.layout.fragment_chart, container, false);
-        WebView webView = view.findViewById(R.id.webview);
-        String html = "<html>\n" +
-                "  <head>\n" +
-                "    <script type=\"text/javascript\" src=\"https://www.gstatic.com/charts/loader.js\"></script>\n" +
-                "    <script type=\"text/javascript\">\n" +
-                "      google.charts.load('current', {'packages':['corechart']});\n" +
-                "      google.charts.setOnLoadCallback(drawChart);\n" +
-                "\n" +
-                "  function drawChart() {\n" +
-                "    var data = google.visualization.arrayToDataTable([\n" +
-                "      ['Mon', 20, 28, 38, 45],\n" +
-                "      ['Tue', 31, 38, 55, 66],\n" +
-                "      ['Wed', 50, 55, 77, 80],\n" +
-                "      ['Thu', 77, 77, 66, 50],\n" +
-                "      ['Fri', 68, 66, 22, 15]\n" +
-                "      // Treat first row as data as well.\n" +
-                "    ], true);\n" +
-                "\n" +
-                "    var options = {\n" +
-                "      legend:'none'\n" +
-                "    };\n" +
-                "\n" +
-                "    var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));\n" +
-                "\n" +
-                "    chart.draw(data, options);\n" +
-                "  }\n" +
-                "    </script>\n" +
-                "  </head>\n" +
-                "  <body>\n" +
-                "    <div id=\"chart_div\" style=\"width: 400px; height: 200px;\"></div>\n" +
-                "  </body>\n" +
-                "</html>";
-        webView.getSettings().setJavaScriptEnabled(true);
-        // enable javascript
-        // allow the webview to load html
-        webView.loadData(html, "text/html", "UTF-8");
+        view = inflater.inflate(R.layout.fragment_chart, container, false);
+        File file = new File(containerActivity.getFilesDir(), "stocks.txt");
+        String stockSymbol = "";
+        if (!file.exists()) {
+            stockSymbol = "AAPL";
+        } else {
+            FileReader reader = null;
+        try {
+            reader = new FileReader(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BufferedReader br = new BufferedReader(reader);
+        try {
+            stockSymbol = br.readLine().trim();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        }
+        
+        updateWebView(stockSymbol);
         
         return view;
     }
