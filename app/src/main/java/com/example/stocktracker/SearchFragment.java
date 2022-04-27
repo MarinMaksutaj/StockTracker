@@ -23,10 +23,13 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -131,8 +134,29 @@ public class SearchFragment extends Fragment {
                                             String symbol = text.substring(0, text.indexOf(" "));
                                             // add the stock to the file 
                                             File file = new File(containerActivity.getFilesDir(), "stocks.txt");
+                                            ArrayList <String> currentStocks = new ArrayList<String>();
+                                            try {
+                                                BufferedReader reader = new BufferedReader(new FileReader(file));
+                                                for (String line; (line = reader.readLine()) != null;) {
+                                                    currentStocks.add(line.trim());
+                                                }
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
                                             try {
                                                 BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
+                                                if (currentStocks.contains(symbol)) {
+                                                    containerActivity.runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(containerActivity);
+                                                            builder.setMessage("Stock already exists!");
+                                                            builder.setPositiveButton("OK", null);
+                                                            builder.show();
+                                                        }
+                                                    });
+                                                    return;
+                                                }
                                                 writer.write(symbol + "\n");
                                                 writer.close();
                                                 System.out.println("write successful");
