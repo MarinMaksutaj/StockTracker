@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 //import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.HttpClient;
 //import org.apache.commons.io.IOUtils;
@@ -99,6 +100,10 @@ public class NewsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_news, container, false);
         newsLV = v.findViewById(R.id.newsListView);
+        TextView title = v.findViewById(R.id.newsTextView);
+        //TODO: implement to read something  from saved InstanceState
+        String ticker = "AMD";
+        title.setText(getResources().getString(R.string.news_title)+ ticker);
 
 
 
