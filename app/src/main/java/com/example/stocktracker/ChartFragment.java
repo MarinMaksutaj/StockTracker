@@ -37,6 +37,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -140,6 +141,8 @@ public class ChartFragment extends Fragment {
 
 
     public void updateWebView(String stockSymbol) {
+        TextView textView = (TextView) view.findViewById(R.id.textView6);
+        textView.setText(stockSymbol + " Chart");
         // update the webview
         WebView webView = view.findViewById(R.id.webview);
         // do an API call to polygon api to get the stock data
