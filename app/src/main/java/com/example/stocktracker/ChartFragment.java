@@ -76,6 +76,9 @@ public class ChartFragment extends Fragment {
         // read the file
         super.onResume();
         File file = new File(containerActivity.getFilesDir(), "stocks.txt");
+        if (!file.exists()) {
+            return;
+        }
         FileReader reader = null;
         try {
             reader = new FileReader(file);
