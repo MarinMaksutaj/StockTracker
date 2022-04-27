@@ -9,7 +9,9 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -189,7 +191,9 @@ public class NewsFragment extends Fragment {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id){
                     //TODO:implement this buttons to open up a webview for the URL at index "position"
-                    System.out.println("Index clicked " + position);
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(urls[position]));
+                    startActivity(intent);
                 }
             });
             simpleAdapter.notifyDataSetChanged();
