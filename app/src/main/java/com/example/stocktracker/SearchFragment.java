@@ -1,6 +1,7 @@
 package com.example.stocktracker;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -14,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -28,8 +30,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -47,6 +55,13 @@ public class SearchFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     public Activity containerActivity = null;
+    public ListView searchLV = null;
+    public EditText searchET = null;
+    List<HashMap<String, String>> aList;
+    SimpleAdapter simpleAdapter;
+    String ticker[] = {};
+    String name[] = {};
+    String market[] = {};
 
     public SearchFragment() {
         // Required empty public constructor
@@ -84,114 +99,137 @@ public class SearchFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_search, container, false);
-        // get the button view
-        Button button = (Button) view.findViewById(R.id.button);
-        // set a click listener for the button
-        button.setOnClickListener(new View.OnClickListener() {
-            // the code in this method will be executed when the numbers category is clicked on.
-            @Override
-            public void onClick(View view) {
-                // get the EditText and its text
-                EditText editText = (EditText) containerActivity.findViewById(R.id.editText);
-                String text = editText.getText().toString();
+        Button searchButton = view.findViewById(R.id.searchButton);
+        searchLV = view.findViewById(R.id.searchListView);
+        searchET = view.findViewById(R.id.searchEditText);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                String text = String.valueOf(searchET.getText());
                 if (text.length() == 0) {
                     return;
                 }
-                // make an API call using a thread
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // make the API call
-                        String result = "";
-                        try {
-                            URL url = new URL("https://financialmodelingprep.com/api/v3/search?query=" + text + "&limit=10&exchange=NASDAQ&apikey=a73dd0c1285faf8c77480af5d48ef364");
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
-                            for (String line; (line = reader.readLine()) != null;) {
-                                result += line;
-                            }
-                            reader.close();
-                            System.out.println(result);
-                            JSONArray jsonArray = new JSONArray(result);
-                            String resultArr [] = new String[jsonArray.length()];
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String symbol = jsonObject.getString("symbol");
-                                String name = jsonObject.getString("name");
-                                resultArr[i] = symbol + " " + name;
-                            }
-                            // update the UI
-                            containerActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    ListView listView = (ListView) containerActivity.findViewById(R.id.listView);
-                                    listView.setAdapter(new ArrayAdapter<String>(containerActivity, android.R.layout.simple_list_item_1, resultArr));
-                                    // set a listener for listView items
-                                    listView.setOnItemClickListener(new ListView.OnItemClickListener() {
-                                        @Override
-                                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                            TextView textView = (TextView) view;
-                                            String text = textView.getText().toString();
-                                            String symbol = text.substring(0, text.indexOf(" "));
-                                            // add the stock to the file 
-                                            File file = new File(containerActivity.getFilesDir(), "stocks.txt");
-                                            ArrayList <String> currentStocks = new ArrayList<String>();
-                                            try {
-                                                BufferedReader reader = new BufferedReader(new FileReader(file));
-                                                for (String line; (line = reader.readLine()) != null;) {
-                                                    currentStocks.add(line.trim());
-                                                }
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            }
-                                            try {
-                                                BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
-                                                if (currentStocks.contains(symbol)) {
-                                                    containerActivity.runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(containerActivity);
-                                                            builder.setMessage("Stock already exists!");
-                                                            builder.setPositiveButton("OK", null);
-                                                            builder.show();
-                                                        }
-                                                    });
-                                                    return;
-                                                }
-                                                writer.write(symbol + "\n");
-                                                writer.close();
-                                                System.out.println("write successful");
-                                                // create a pop up to show the user that the stock was added
-                                                containerActivity.runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(containerActivity);
-                                                        builder.setMessage("Stock added!");
-                                                        builder.setPositiveButton("OK", null);
-                                                        builder.show();
-                                                    }
-                                                });
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            }
-
-                                            
-                                            
-
-                                }
-                            });
-                        }
-                    });
-                        } catch (IOException | JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-
+                new SearchAPIManager().execute(text);
             }
         });
+
         return view;
     }
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
+    }
+
+    private class SearchAPIManager extends AsyncTask<String, String, String> {
+
+
+        @Override
+        protected String doInBackground(String... params) {
+            String searchTerm = params[0];
+            System.out.println(searchTerm);
+            String key = getResources().getString(R.string.API_KEY);
+            String urlString= "https://api.polygon.io/v3/reference/tickers?search="+searchTerm+"&active=true&sort=ticker&order=asc&limit=30&apiKey="+key;
+            aList = new ArrayList<HashMap<String, String>>();
+            JSONObject result = new JSONObject();
+            URL url = null;
+            try {
+                url = new URL(urlString);
+                URLConnection connection = url.openConnection();
+                connection.setConnectTimeout(10000); // 10 seconds
+                connection.setReadTimeout(10000); // 10 seconds
+                connection.connect();
+                // Optionally check the status code. Status 200 means everything went OK.
+                InputStream stream = connection.getInputStream();
+                String text = new BufferedReader(
+                        new InputStreamReader(stream, StandardCharsets.UTF_8))
+                        .lines()
+                        .collect(Collectors.joining("\n"));
+                stream.close();
+                JSONObject obj = new JSONObject(text);
+                System.out.println(obj);
+                JSONArray r = (JSONArray) obj.get("results");
+                market = new String[r.length()];
+                ticker = new String[r.length()];
+                name = new String[r.length()];
+                for( int i = 0 ; i < r.length() ; i++){
+                    JSONObject tempNews = (JSONObject) r.get(i);
+                    ticker[i] = tempNews.getString("ticker");
+                    name[i] = tempNews.getString("name");
+                    market[i] = tempNews.getString("primary_exchange");
+                }
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(String result){
+
+            for(int i = 0 ; i < ticker.length; i++){
+                HashMap<String, String> hm = new HashMap<String, String>();
+                hm.put("tickerText", "Ticker:\n"+ticker[i]);
+                hm.put("nameText", name[i]);
+                hm.put("marketText", "Exchange:\n"+market[i]);
+                aList.add(hm);
+            }
+            String[] from = {"tickerText","nameText", "marketText"};
+            int[] to = {R.id.tickerText, R.id.nameText, R.id.marketText};
+            simpleAdapter = new SimpleAdapter(containerActivity, aList, R.layout.search_row_layout, from , to);
+            searchLV.setAdapter(simpleAdapter);
+            searchLV.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id){
+                    String symbol = ticker[position];
+                    // add the stock to the file
+                    File file = new File(containerActivity.getFilesDir(), "stocks.txt");
+                    ArrayList <String> currentStocks = new ArrayList<String>();
+                    try {
+                        BufferedReader reader = new BufferedReader(new FileReader(file));
+                        for (String line; (line = reader.readLine()) != null;) {
+                            currentStocks.add(line.trim());
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
+                        if (currentStocks.contains(symbol)) {
+                            containerActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(containerActivity);
+                                    builder.setMessage("Stock already exists!");
+                                    builder.setPositiveButton("OK", null);
+                                    builder.show();
+                                }
+                            });
+                            return;
+                        }
+                        writer.write(symbol + "\n");
+                        writer.close();
+                        System.out.println("write successful");
+                        // create a pop up to show the user that the stock was added
+                        containerActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(containerActivity);
+                                builder.setMessage("Stock added!");
+                                builder.setPositiveButton("OK", null);
+                                builder.show();
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            simpleAdapter.notifyDataSetChanged();
+
+        }
     }
 }
