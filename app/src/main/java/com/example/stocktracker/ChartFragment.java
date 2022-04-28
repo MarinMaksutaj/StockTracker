@@ -62,6 +62,7 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -198,8 +199,11 @@ public class ChartFragment extends Fragment {
                 e.printStackTrace();
             }
             BufferedReader br = new BufferedReader(reader);
+
             try {
-                tickerGraphed = br.readLine().trim();
+                String nonEmpty = br.readLine();
+                if(nonEmpty!=null) tickerGraphed = br.readLine().trim(); // list existed but deleted
+                else tickerGraphed = "AAPL";
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -278,8 +282,8 @@ public class ChartFragment extends Fragment {
             cal.add(Calendar.DATE, -5);
             String date1 = dateFormat.format(cal.getTime());
             String date2 = dateFormat.format(new Date());
-            System.out.println(date1 + " vs "+date2);
-            while(true) {
+            System.out.println(date1 + " vs " + date2);
+            while (true) {
                 //we need the proper api_key access to really test the url, we fetch end of the day data.
                 String apiCall = "https://api.polygon.io/v2/aggs/ticker/" + tickerGraphed +
                         "/range/1/minute/" + date1 + "/" + date2 + "?sort=asc&limit=50&apiKey=" +
@@ -304,16 +308,16 @@ public class ChartFragment extends Fragment {
                     JSONObject jsonObject = new JSONObject(response);
                     JSONArray data = jsonObject.getJSONArray("results");
                     String stockDataString = "";
-                    for (int i = data.length() - 6 ; i < data.length()  ; i++) {
+                    for (int i = data.length() - 6; i < data.length(); i++) {
                         stockDataString += "[ '";
                         JSONObject stockData = data.getJSONObject(i);
                         String time = stockData.getString("t");
                         // convert time from UNIX time to readable time
                         long unixTime = Long.parseLong(time) / 1000L;
-                        System.out.println(Instant.ofEpochSecond(unixTime ));
-                        Date date = Date.from(Instant.ofEpochSecond(unixTime ));
+                        System.out.println(Instant.ofEpochSecond(unixTime));
+                        Date date = Date.from(Instant.ofEpochSecond(unixTime));
                         System.out.println(date.toString());
-                        time = String.valueOf(date.getHours()) +":"+ String.valueOf(date.getMinutes());
+                        time = String.valueOf(date.getHours()) + ":" + String.valueOf(date.getMinutes());
                         stockDataString += time + "', ";
                         String low = stockData.getString("l");
                         stockDataString += low + ", ";
@@ -381,52 +385,16 @@ public class ChartFragment extends Fragment {
                 }
 
             }
+        }
 
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        
-        view = inflater.inflate(R.layout.fragment_chart, container, false);
-        File file = new File(containerActivity.getFilesDir(), "stocks.txt");
-        String stockSymbol = "";
-        if (!file.exists()) {
-            stockSymbol = "AAPL";
-        } else {
-            FileReader reader = null;
-            try {
-                reader = new FileReader(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            BufferedReader br = new BufferedReader(reader);
-            try {
-                String content = br.readLine();
-                if (content == null) {
-                    stockSymbol = "AAPL";
-                } else {
-                    stockSymbol = content.trim();
+            @Override
+                protected void onPostExecute(String result){
+
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        @Override
-        protected void onPostExecute(String result){
-
-        }
     }
 
 
-
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(getString(R.string.stock_graphed), ticker);
-        editor.apply();
-    }
     public class ListAdapter extends BaseAdapter {
         private Context context;
         private ArrayList<String> stocks;
@@ -467,7 +435,7 @@ public class ChartFragment extends Fragment {
                      public void onClick(View v) {
                          // get the stock symbol
                          String stockSymbol = textView.getText().toString();
-                         updateWebView(stockSymbol);
+                         tickerGraphed = stockSymbol;
                          notifyNewsOfStockChange(stockSymbol);
                      }
                  });
