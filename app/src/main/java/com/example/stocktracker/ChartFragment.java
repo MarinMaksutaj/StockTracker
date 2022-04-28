@@ -202,7 +202,7 @@ public class ChartFragment extends Fragment {
 
             try {
                 String nonEmpty = br.readLine();
-                if(nonEmpty!=null) tickerGraphed = br.readLine().trim(); // list existed but deleted
+                if(nonEmpty!=null) tickerGraphed = nonEmpty.trim(); // list existed but deleted
                 else tickerGraphed = "AAPL";
             } catch (IOException e) {
                 e.printStackTrace();
@@ -283,10 +283,13 @@ public class ChartFragment extends Fragment {
             String date1 = dateFormat.format(cal.getTime());
             String date2 = dateFormat.format(new Date());
             System.out.println(date1 + " vs " + date2);
+            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+            String tickerDuration = "minute";//TODO: this has to be adjusted to work properly once api_key is "paid"
+            if(sharedPref.getBoolean(getString(R.string.hourly_setting), false)) tickerDuration = "hour";
             while (true) {
                 //we need the proper api_key access to really test the url, we fetch end of the day data.
                 String apiCall = "https://api.polygon.io/v2/aggs/ticker/" + tickerGraphed +
-                        "/range/1/minute/" + date1 + "/" + date2 + "?sort=asc&limit=50&apiKey=" +
+                        "/range/1/"+tickerDuration+"/" + date1 + "/" + date2 + "?sort=asc&limit=50&apiKey=" +
                         getResources().getString(R.string.API_KEY);
                 System.out.println("Background was run");
                 try {
@@ -307,66 +310,20 @@ public class ChartFragment extends Fragment {
                     String response = sb.toString();
                     JSONObject jsonObject = new JSONObject(response);
                     JSONArray data = jsonObject.getJSONArray("results");
-                    String stockDataString = "";
-                    for (int i = data.length() - 6; i < data.length(); i++) {
-                        stockDataString += "[ '";
-                        JSONObject stockData = data.getJSONObject(i);
-                        String time = stockData.getString("t");
-                        // convert time from UNIX time to readable time
-                        long unixTime = Long.parseLong(time) / 1000L;
-                        System.out.println(Instant.ofEpochSecond(unixTime));
-                        Date date = Date.from(Instant.ofEpochSecond(unixTime));
-                        System.out.println(date.toString());
-                        time = String.valueOf(date.getHours()) + ":" + String.valueOf(date.getMinutes());
-                        stockDataString += time + "', ";
-                        String low = stockData.getString("l");
-                        stockDataString += low + ", ";
-                        String open = stockData.getString("o");
-                        stockDataString += open + ", ";
-                        String close = stockData.getString("c");
-                        stockDataString += close + ", ";
-                        String high = stockData.getString("h");
-                        stockDataString += high;
-                        String volume = stockData.getString("v");
-                        stockDataString += "],\n";
-                    }
-                    System.out.println(stockDataString);
 
-                    String html = "<html>\n" +
-                            "  <head>\n" +
-                            "    <script type=\"text/javascript\" src=\"https://www.gstatic.com/charts/loader.js\"></script>\n" +
-                            "    <script type=\"text/javascript\">\n" +
-                            "      google.charts.load('current', {'packages':['corechart']});\n" +
-                            "      google.charts.setOnLoadCallback(drawChart);\n" +
-                            "\n" +
-                            "  function drawChart() {\n" +
-                            "    var data = google.visualization.arrayToDataTable([\n " +
-                            stockDataString +
-                            "      // Treat first row as data as well.\n" +
-                            "    ], true);\n" +
-                            "\n" +
-                            "    var options = {\n" +
-                            "      legend:'none'\n" +
-                            "    };\n" +
-                            "\n" +
-                            "    var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));\n" +
-                            "\n" +
-                            "    chart.draw(data, options);\n" +
-                            "  }\n" +
-                            "    </script>\n" +
-                            "  </head>\n" +
-                            "  <body>\n" +
-                            "    <div id=\"chart_div\" style=\"width: 400px; height: 200px;\"></div>\n" +
-                            "  </body>\n" +
-                            "</html>";
+                    boolean isLined = sharedPref.getBoolean(getString(R.string.line_graph), false);
+                    boolean hasTrend = sharedPref.getBoolean(getString(R.string.trend_toggle), false);
+                    String html="";
+                    if (isLined) html = lineGraphGenerator(data, hasTrend);
+                    else html = candleGraphGenerator(data, hasTrend);
 
                     // update the webview on the UI thread
-
+                    String finalHtml = html;
                     containerActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             webView.getSettings().setJavaScriptEnabled(true);
-                            webView.loadData(html, "text/html", "UTF-8");
+                            webView.loadData(finalHtml, "text/html", "UTF-8");
                         }
                     });
 
@@ -386,12 +343,114 @@ public class ChartFragment extends Fragment {
 
             }
         }
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        private String candleGraphGenerator(JSONArray data, boolean hasTrend) throws JSONException {
+            String stockDataString = "";
+            int fetchSize = data.length() - 30; //prevents we have least values than what we are trying to graph
+            if(fetchSize<0) fetchSize = 0;
+            for (int i = fetchSize; i < data.length(); i++) {
+                stockDataString += "[ new Date(";
+                JSONObject stockData = data.getJSONObject(i);
+                String time = stockData.getString("t");
+                stockDataString += time + "), ";
+                String low = stockData.getString("l");
+                stockDataString += low + ", ";
+                String open = stockData.getString("o");
+                stockDataString += open + ", ";
+                String close = stockData.getString("c");
+                stockDataString += close + ", ";
+                String high = stockData.getString("h");
+                stockDataString += high;
+                String volume = stockData.getString("v");
+                stockDataString += "],\n";
+            }
+            System.out.println(stockDataString);
+            String trend = "";
+            if (hasTrend) trend = "trendlines: { 0: {} } ";
 
+            String html = "<html>\n" +
+                    "  <head>\n" +
+                    "    <script type=\"text/javascript\" src=\"https://www.gstatic.com/charts/loader.js\"></script>\n" +
+                    "    <script type=\"text/javascript\">\n" +
+                    "      google.charts.load('current', {'packages':['corechart']});\n" +
+                    "      google.charts.setOnLoadCallback(drawChart);\n" +
+                    "\n" +
+                    "  function drawChart() {\n" +
+                    "    var data = google.visualization.arrayToDataTable([\n " +
+                    stockDataString +
+                    "      // Treat first row as data as well.\n" +
+                    "    ], true);\n" +
+                    "\n" +
+                    "    var options = {\n" +
+                    "      legend:'none',\n" +trend+
+                    "    };\n" +
+                    "\n" +
+                    "    var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));\n" +
+                    "\n" +
+                    "    chart.draw(data, options);\n" +
+                    "  }\n" +
+                    "    </script>\n" +
+                    "  </head>\n" +
+                    "  <body>\n" +
+                    "    <div id=\"chart_div\" style=\"width: 400px; height: 200px;\"></div>\n" +
+                    "  </body>\n" +
+                    "</html>";
+            return html;
 
-            @Override
-                protected void onPostExecute(String result){
+        }
 
-                }
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        private String lineGraphGenerator(JSONArray data, boolean hasTrend) throws JSONException {
+            String stockDataString = "";
+            int fetchSize = data.length() - 30; //prevents we have least values than what we are trying to graph
+            if(fetchSize<0) fetchSize = 0;
+            for (int i = fetchSize; i < data.length(); i++) {
+                stockDataString += "[ new Date(";
+                JSONObject stockData = data.getJSONObject(i);
+                String time = stockData.getString("t");
+                stockDataString += time + "), ";
+                String close = stockData.getString("c");
+                stockDataString += close ;
+                stockDataString += "],\n";
+            }
+            System.out.println(stockDataString);
+            String trend = "";
+            if (hasTrend) trend = "trendlines: { 0: {} } ";
+
+            String html = "<html>\n" +
+                    "  <head>\n" +
+                    "    <script type=\"text/javascript\" src=\"https://www.gstatic.com/charts/loader.js\"></script>\n" +
+                    "    <script type=\"text/javascript\">\n" +
+                    "      google.charts.load('current', {'packages':['corechart']});\n" +
+                    "      google.charts.setOnLoadCallback(drawChart);\n" +
+                    "\n" +
+                    "  function drawChart() {\n" +
+                    "    var data = google.visualization.arrayToDataTable([\n " +
+                    stockDataString +
+                    "      // Treat first row as data as well.\n" +
+                    "    ], true);\n" +
+                    "\n" +
+                    "    var options = {\n" +
+                    "      legend:'none',\n" +trend+
+                    "    };\n" +
+                    "\n" +
+                    "    var chart = new google.visualization.LineChart(document.getElementById('chart_div'));\n" +
+                    "\n" +
+                    "    chart.draw(data, options);\n" +
+                    "  }\n" +
+                    "    </script>\n" +
+                    "  </head>\n" +
+                    "  <body>\n" +
+                    "    <div id=\"chart_div\" style=\"width: 400px; height: 200px;\"></div>\n" +
+                    "  </body>\n" +
+                    "</html>";
+            return html;
+
+        }
+
+        @Override
+        protected void onPostExecute(String result){
+        }
     }
 
 

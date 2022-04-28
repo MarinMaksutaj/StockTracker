@@ -65,39 +65,71 @@ public class SettingsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
-        //Read our current settings to set the buttons in the proper way
+        //we read all settings from same sharedPrefences variable
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         //set up for first option in settings
-        boolean state = sharedPref.getBoolean(getString(R.string.saved_color_setting), false);
+        //first we read current saved setting from shared pref
+        boolean state = sharedPref.getBoolean(getString(R.string.line_graph), false);
         ToggleButton firstSetting = (ToggleButton) view.findViewById(R.id.linegraphSettingToggle);
         firstSetting.setChecked(state);
         firstSetting.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
+                //we then change the setting once toggle is clicked
                 SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
-                boolean ans = firstSetting.isChecked();
-                editor.putBoolean(getString(R.string.saved_color_setting), ans);
+                editor.putBoolean(getString(R.string.line_graph), firstSetting.isChecked());
                 editor.apply();
             }
         });
 
         //set up for second option in settings
+        //first we read current saved setting from shared pref
         boolean lengthy = sharedPref.getBoolean(getString(R.string.length_news), false);
         ToggleButton secondSetting = (ToggleButton) view.findViewById(R.id.lengthSettingToggle);
         secondSetting.setChecked(lengthy);
         secondSetting.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
+                //we then change the setting once toggle is clicked
                 SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
-                boolean ans = secondSetting.isChecked();
-                editor.putBoolean(getString(R.string.length_news), ans);
+                editor.putBoolean(getString(R.string.length_news), secondSetting.isChecked());
                 editor.apply();
             }
         });
 
+        //set up for third option in settings
+        //first we read current saved setting from shared pref
+        boolean trend = sharedPref.getBoolean(getString(R.string.trend_toggle), false);
+        ToggleButton thirdSetting = (ToggleButton) view.findViewById(R.id.trendSettingsToggle);
+        thirdSetting.setChecked(trend);
+        thirdSetting.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                //we then change the setting once toggle is clicked
+                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(getString(R.string.trend_toggle), thirdSetting.isChecked());
+                editor.apply();
+            }
+        });
 
+        //set up for fourth option in settings
+        //first we read current saved setting from shared pref
+        boolean hourly = sharedPref.getBoolean(getString(R.string.hourly_setting), false);
+        ToggleButton fourthSetting = (ToggleButton) view.findViewById(R.id.hourlySettingToggle);
+        fourthSetting.setChecked(hourly);
+        fourthSetting.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                //we then change the setting once toggle is clicked
+                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(getString(R.string.hourly_setting), fourthSetting.isChecked());
+                editor.apply();
+            }
+        });
 
         return view;
     }
