@@ -69,7 +69,7 @@ public class SettingsFragment extends Fragment {
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         //set up for first option in settings
         boolean state = sharedPref.getBoolean(getString(R.string.saved_color_setting), false);
-        ToggleButton firstSetting = (ToggleButton) view.findViewById(R.id.firstSettingToggle);
+        ToggleButton firstSetting = (ToggleButton) view.findViewById(R.id.linegraphSettingToggle);
         firstSetting.setChecked(state);
         firstSetting.setOnClickListener(new View.OnClickListener(){
             @Override
