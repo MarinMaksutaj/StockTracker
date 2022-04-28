@@ -46,12 +46,30 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintHorizontal_weight="1"/>
         <TextView
+            android:id="@+id/trendSettingsText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/trend_setting"
+            android:textSize="24dp"
+            app:layout_constraintTop_toBottomOf="@+id/linegraphSettingToggle"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/trendSettingsToggle"
+            app:layout_constraintHorizontal_weight="2"/>
+        <ToggleButton
+            android:id="@+id/trendSettingsToggle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toRightOf="@+id/trendSettingsText"
+            app:layout_constraintTop_toBottomOf="@+id/linegraphSettingToggle"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintHorizontal_weight="1"/>
+        <TextView
             android:id="@+id/lengthSettingsText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/second_setting"
             android:textSize="24dp"
-            app:layout_constraintTop_toBottomOf="@+id/linegraphSettingToggle"
+            app:layout_constraintTop_toBottomOf="@+id/trendSettingsToggle"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@id/lengthSettingToggle"
             app:layout_constraintHorizontal_weight="2"/>
@@ -60,7 +78,25 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toRightOf="@+id/lengthSettingsText"
-            app:layout_constraintTop_toBottomOf="@id/linegraphSettingToggle"
+            app:layout_constraintTop_toBottomOf="@id/trendSettingsToggle"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintHorizontal_weight="1"/>
+        <TextView
+            android:id="@+id/hourlySettingsText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/hourly_setting"
+            android:textSize="24dp"
+            app:layout_constraintTop_toBottomOf="@+id/lengthSettingToggle"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/hourlySettingToggle"
+            app:layout_constraintHorizontal_weight="2"/>
+        <ToggleButton
+            android:id="@+id/hourlySettingToggle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toRightOf="@+id/hourlySettingsText"
+            app:layout_constraintTop_toBottomOf="@id/lengthSettingToggle"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintHorizontal_weight="1"/>
 
