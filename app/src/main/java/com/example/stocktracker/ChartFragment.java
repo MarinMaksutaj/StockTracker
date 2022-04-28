@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -24,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+
 import java.util.Random;
 import java.util.stream.Collectors;
+
 
 import android.app.Activity;
 
@@ -56,7 +59,9 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -156,20 +161,19 @@ public class ChartFragment extends Fragment {
             }
         }
         ListView listView = (ListView) containerActivity.findViewById(R.id.stockListView);
-        listView.setAdapter(new ArrayAdapter<String>(containerActivity, android.R.layout.simple_list_item_1, stockSymbol));
-        // add listView item click listener
-        listView.setOnItemClickListener(new ListView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //kill the waiting time grapher is going through
-                //grapher.cancel(true);
-                // get the stock symbol
-                tickerGraphed = (String) adapterView.getItemAtPosition(i);
-                notifyNewsOfStockChange(tickerGraphed);
-                //start graphign process
-                //grapher.execute();
-            }
-        });
+
+        // create a custom adapter
+        listView.setAdapter(new ListAdapter(containerActivity, stockSymbol));
+
+    }
+
+    public String[] ArrayListToStringArray(ArrayList<String> stockSymbol) {
+        String [] stockSymbolArray = new String[stockSymbol.size()];
+        for (int i = 0; i < stockSymbol.size(); i++) {
+            stockSymbolArray[i] = stockSymbol.get(i);
+        }
+        return stockSymbolArray;
+
     }
 
 
@@ -378,6 +382,36 @@ public class ChartFragment extends Fragment {
 
             }
 
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        
+        view = inflater.inflate(R.layout.fragment_chart, container, false);
+        File file = new File(containerActivity.getFilesDir(), "stocks.txt");
+        String stockSymbol = "";
+        if (!file.exists()) {
+            stockSymbol = "AAPL";
+        } else {
+            FileReader reader = null;
+            try {
+                reader = new FileReader(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            BufferedReader br = new BufferedReader(reader);
+            try {
+                String content = br.readLine();
+                if (content == null) {
+                    stockSymbol = "AAPL";
+                } else {
+                    stockSymbol = content.trim();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
 
         @Override
@@ -387,5 +421,98 @@ public class ChartFragment extends Fragment {
     }
 
 
+
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(getString(R.string.stock_graphed), ticker);
+        editor.apply();
+    }
+    public class ListAdapter extends BaseAdapter {
+        private Context context;
+        private ArrayList<String> stocks;
+
+        public ListAdapter(Context context, ArrayList<String> stocks) {
+            this.context = context;
+            this.stocks = stocks;
+        }
+
+        @Override
+        public int getCount() {
+            return stocks.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return stocks.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View view = convertView;
+            if (view == null) {
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                view = inflater.inflate(R.layout.simple_list_item_2, null);
+            }
+            TextView textView = view.findViewById(R.id.stockSymbol);
+            textView.setText(stocks.get(position));
+            ImageView imageView = view.findViewById(R.id.trashCanImageId);
+            imageView.setImageResource(R.drawable.trash_can);
+            textView.setOnClickListener(new View.OnClickListener() {
+                     @Override
+                     public void onClick(View v) {
+                         // get the stock symbol
+                         String stockSymbol = textView.getText().toString();
+                         updateWebView(stockSymbol);
+                         notifyNewsOfStockChange(stockSymbol);
+                     }
+                 });
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // get the textview
+                    // get the text
+                    String stockSymbol = textView.getText().toString();
+                    // remove the stock from the list
+                    stocks.remove(stockSymbol);
+                    // update the list
+                    notifyDataSetChanged();
+                    File file = new File(containerActivity.getFilesDir(), "stocks.txt");
+                    ArrayList <String> currentStocks = new ArrayList<String>();
+                    try {
+                        BufferedReader reader = new BufferedReader(new FileReader(file));
+                        for (String line; (line = reader.readLine()) != null;) {
+                            // check if element is the deleted one
+                            if (!line.trim().equals(stockSymbol)) {
+                                currentStocks.add(line.trim());
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        PrintWriter writer = new PrintWriter(file);
+                        writer.print("");
+                        writer.close();
+                        BufferedWriter br = new BufferedWriter(new FileWriter(file, true));
+                        System.out.println("testingnngngnng");
+                        for (int i = 0 ; i < currentStocks.size() ;i++) {
+                            br.write(currentStocks.get(i) + "\n");
+                        }
+                        br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+            return view;
+        }
+    }
 
 }
