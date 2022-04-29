@@ -16,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -109,6 +110,8 @@ public class NewsFragment extends Fragment {
         //we read what stock is currently graph, to fetch its news
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         String ticker = sharedPref.getString(getString(R.string.stock_graphed), "AAPL");
+        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        System.out.println("Model view Working: + " + model.getStock().getValue());
         boolean lengthy = sharedPref.getBoolean(getString(R.string.length_news), false);
         String lengthNews = "10";
         if( lengthy ) lengthNews = "20";
