@@ -55,6 +55,8 @@ import android.os.IBinder;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.text.format.DateUtils;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -98,7 +100,6 @@ public class ChartFragment extends Fragment {
     private TextView titleTextView;
     private GraphAPIManager grapher;
     private SharedViewModel model;
-    private TextView chartTitle;
 
 
     public ChartFragment() {
@@ -361,6 +362,7 @@ public class ChartFragment extends Fragment {
 
             }
         }
+
         @RequiresApi(api = Build.VERSION_CODES.O)
         private String candleGraphGenerator(JSONArray data, boolean hasTrend) throws JSONException {
             String stockDataString = "";
@@ -400,6 +402,7 @@ public class ChartFragment extends Fragment {
                     "    ], true);\n" +
                     "\n" +
                     "    var options = {\n" +
+                    "      'chartArea': {'width': '85%', 'height': '80%'},"+
                     "      legend:'none',\n" +trend+
                     "    };\n" +
                     "\n" +
@@ -410,7 +413,7 @@ public class ChartFragment extends Fragment {
                     "    </script>\n" +
                     "  </head>\n" +
                     "  <body>\n" +
-                    "    <div id=\"chart_div\" style=\"width: 400px; height: 200px;\"></div>\n" +
+                    "    <div id=\"chart_div\" style=\"width: 100%; height: 100%;\"></div>\n" +
                     "  </body>\n" +
                     "</html>";
             return html;
@@ -449,6 +452,7 @@ public class ChartFragment extends Fragment {
                     "    ], true);\n" +
                     "\n" +
                     "    var options = {\n" +
+                    "      'chartArea': {'width': '85%', 'height': '80%'},"+
                     "      legend:'none',\n" +trend+
                     "    };\n" +
                     "\n" +
@@ -459,7 +463,7 @@ public class ChartFragment extends Fragment {
                     "    </script>\n" +
                     "  </head>\n" +
                     "  <body>\n" +
-                    "    <div id=\"chart_div\" style=\"width: 400px; height: 200px;\"></div>\n" +
+                    "    <div id=\"chart_div\" style=\"width: 100%; height: 100%;\"></div>\n" +
                     "  </body>\n" +
                     "</html>";
             return html;

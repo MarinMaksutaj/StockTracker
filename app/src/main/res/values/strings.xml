@@ -21,6 +21,8 @@
     <string name="trend_setting">Display linear trend</string>
     <string name="trend_toggle">TREND_TOGGLE</string>
     <string name="hourly_setting">Hourly graph</string>
+    <string name="sendButton">Send Email</string>
+    <string name="sendEmailText">Select from contacts with email:</string>
 
 
 </resources>

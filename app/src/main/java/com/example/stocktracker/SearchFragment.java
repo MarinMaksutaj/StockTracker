@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.os.FileUtils;
 import android.view.LayoutInflater;
@@ -102,16 +103,22 @@ public class SearchFragment extends Fragment {
         Button searchButton = view.findViewById(R.id.searchButton);
         searchLV = view.findViewById(R.id.searchListView);
         searchET = view.findViewById(R.id.searchEditText);
+        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
         searchButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String text = String.valueOf(searchET.getText());
-                if (text.length() == 0) {
+                if (text.length() == 0)
                     return;
-                }
+                else
+                    model.setSearchTerm(text);
                 new SearchAPIManager().execute(text);
             }
         });
-
+        if( model.getSearchTerm().getValue() != null){
+            searchET.setText(model.getSearchTerm().getValue());
+        }
+        new SearchAPIManager().execute(model.getSearchTerm().getValue());
         return view;
     }
     public void setContainerActivity(Activity containerActivity){
@@ -124,6 +131,7 @@ public class SearchFragment extends Fragment {
         @Override
         protected String doInBackground(String... params) {
             String searchTerm = params[0];
+            if(searchTerm == null) return null;
             System.out.println(searchTerm);
             String key = getResources().getString(R.string.API_KEY);
             String urlString= "https://api.polygon.io/v3/reference/tickers?search="+searchTerm+"&active=true&sort=ticker&order=asc&limit=30&apiKey="+key;
@@ -169,6 +177,9 @@ public class SearchFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String result){
+            if(ticker.length==0){
+                return;
+            }
 
             for(int i = 0 ; i < ticker.length; i++){
                 HashMap<String, String> hm = new HashMap<String, String>();

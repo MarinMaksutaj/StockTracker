@@ -7,53 +7,56 @@
     tools:context=".ChartFragment">
 
 
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:layout_height="50dp"
+        android:textSize="20sp"
+        android:layout_marginTop="20dp"
+        android:text="TSLA Chart"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textView6"
+        app:layout_constraintBottom_toTopOf="@id/shareChartButton"
+        app:layout_constraintVertical_weight="1"/>
+
+
     <Button
         android:id="@+id/shareChartButton"
-        android:layout_width="175dp"
+        android:layout_width="165dp"
         android:layout_height="50dp"
-        android:layout_marginStart="116dp"
-        android:layout_marginTop="296dp"
         android:background="@color/theme_blue"
         android:gravity="center"
         android:text="@string/share_button"
         android:textAlignment="center"
         android:textSize="20dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/webview"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/stockListView"/>
 
     <ListView
         android:id="@+id/stockListView"
-        android:layout_width="406dp"
-        android:layout_height="208dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="356dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="15dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_weight="6">
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/shareChartButton"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_weight="1"
+        />
 
-    </ListView>
 
-    <WebView
-        android:id="@+id/webview"
-        android:layout_width="410dp"
-        android:layout_height="224dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="60dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="179dp"
-        android:textAlignment="center"
-        android:layout_height="30dp"
-        android:textSize="20sp"
-        android:layout_marginStart="112dp"
-        android:layout_marginTop="16dp"
-        android:text="TSLA Chart"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
