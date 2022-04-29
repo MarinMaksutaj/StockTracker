@@ -98,6 +98,7 @@ public class ChartFragment extends Fragment {
     private TextView titleTextView;
     private GraphAPIManager grapher;
     private SharedViewModel model;
+    private TextView chartTitle;
 
 
     public ChartFragment() {
@@ -512,6 +513,7 @@ public class ChartFragment extends Fragment {
                          // get the stock symbol
                          String stockSymbol = textView.getText().toString();
                          tickerGraphed = stockSymbol;
+                         titleTextView.setText(tickerGraphed+" Chart");
                          notifyNewsOfStockChange(stockSymbol);
                          alertViewModel(tickerGraphed);
                      }
