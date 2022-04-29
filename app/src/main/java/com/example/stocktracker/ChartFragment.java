@@ -98,6 +98,7 @@ public class ChartFragment extends Fragment {
     private TextView titleTextView;
     private GraphAPIManager grapher;
     private SharedViewModel model;
+    private TextView chartTitle;
 
 
     public ChartFragment() {
@@ -513,8 +514,9 @@ public class ChartFragment extends Fragment {
                          String stockSymbol = textView.getText().toString();
                          System.out.println("switched");
                          tickerGraphed = stockSymbol;
-                         TextView stockTitle = containerActivity.findViewById(R.id.textView6);
-                         stockTitle.setText(tickerGraphed + " Chart");
+
+                         titleTextView.setText(tickerGraphed + " Chart");
+
                          notifyNewsOfStockChange(stockSymbol);
                          alertViewModel(tickerGraphed);
                      }
