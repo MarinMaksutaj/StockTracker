@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -33,9 +35,11 @@ public class ContactsFragment extends Fragment {
     private ListView contactsListView;
     ArrayAdapter<String> contactsAdapter = null;
     private ArrayList<String> contacts = new ArrayList<String>();
+    private ArrayList<String> contactsID = new ArrayList<String>();
+    private ArrayList<Integer> selectedIndexList = new ArrayList<Integer>();
 
     /*
-     * Sets the container activity when object is first instanciated
+     * Sets the container activity when object is first instantiated
      */
     public void setContainerActivity(Activity containerActivity) {
         this.containerActivity = containerActivity;
@@ -50,6 +54,16 @@ public class ContactsFragment extends Fragment {
                              Bundle savedInstanceState) {
         inflatedView = inflater.inflate(R.layout.fragment_contacts, container, false);
         contactsListView = (ListView) inflatedView.findViewById(R.id.contact_list_view);
+        TextView counter = (TextView) inflatedView.findViewById(R.id.sendEmailText);
+        counter.setText(getResources().getString(R.string.sendEmailText) + " ("+selectedIndexList.size()+ ")");
+        Button sendMailButton = (Button) inflatedView.findViewById(R.id.sendEmailButton);
+        sendMailButton.setOnClickListener(new View.OnClickListener(){
+           @Override
+           public void onClick(View view){
+               sendEmail();
+           }
+        });
+
         Bundle bundle = getArguments();
         if (bundle != null) {
             String uri_string = bundle.getString("uri");
@@ -59,18 +73,15 @@ public class ContactsFragment extends Fragment {
             @Override
             public void onItemClick(android.widget.AdapterView<?>
                                             parent, View view, int position, long id) {
-                // get the contact name
-                String contactID = contacts.get(position).split(" :: ")[1];
-                System.out.println(contactID);
-                // get the contact email address
-                String contactEmail = getContactEmail(contactID);
-                if (contactEmail != null) {
-                    // send the email
-                    sendEmail(contactEmail);
-                } else {
-                    // send the email without an email address
-                    sendEmail(null);
+
+                if (selectedIndexList.contains(position)) {
+                    view.setBackgroundColor(getResources().getColor(R.color.white));
+                    selectedIndexList.remove(selectedIndexList.indexOf(position));
+                }else {
+                    view.setBackgroundColor(getResources().getColor(R.color.theme_light_blue2));
+                    selectedIndexList.add(position);
                 }
+                counter.setText(getResources().getString(R.string.sendEmailText) + " ("+selectedIndexList.size()+ ")");
             }
         });
         return inflatedView;
@@ -98,15 +109,22 @@ public class ContactsFragment extends Fragment {
      * sendEmail method fires up an intent and sends an email with the screenshot of the
      * canvas to the specified emailAdress.
      */
-    public void sendEmail(String emailAddress) {
+    public void sendEmail() {
         // get the email address
-        System.out.println(emailAddress);
-        if (emailAddress == null) {
-            emailAddress = "";
+        int n = selectedIndexList.size();
+        String emails[] = new String[n];
+        for (int i = 0 ; i < n ;i++){
+            String email = getContactEmail(contactsID.get(selectedIndexList.get(i)));
+            if (email == null)
+                emails[i] = "";
+            else
+                emails[i] = email;
+
         }
+
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("vnd.android.cursor.dir/email");
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[] { emailAddress });
+        intent.putExtra(Intent.EXTRA_EMAIL, emails);
         intent.putExtra(android.content.Intent.EXTRA_STREAM, uri);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(intent);
@@ -145,16 +163,18 @@ public class ContactsFragment extends Fragment {
             @SuppressLint("Range") String given = cursor.getString(
                     cursor.getColumnIndex
                             (ContactsContract.Contacts.DISPLAY_NAME));
-            System.out.println(given + " :: " + id);
-            contacts.add(given + " :: " + id);
-            limit--;
+            if( getContactEmail(id) != "") {
+                contacts.add(given);
+                contactsID.add(id);
+                limit--;
+            }
         }
         cursor.close();
     }
 
     /*
      * Method that sets up the ContactsAdapter
-     */
+     */ //TODO: fix a bug where moving the viewlist with selected items on the corners chanches the ones who are selected
     private void setupContactsAdapter() {
         contactsListView =
                 (ListView) inflatedView.findViewById(R.id.contact_list_view);

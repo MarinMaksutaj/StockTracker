@@ -9,20 +9,24 @@ public class SharedViewModel extends ViewModel {
     private final MutableLiveData<String> search = new MutableLiveData<String>();
 
 
+    //the following two methods help two fragments communicate on which current stocks we are graphing.
+    //set method for current stock
     public void setStock(String ticker) {
         stock.setValue(ticker);
     }
 
+    //get method for currect stock
     public LiveData<String> getStock() {
-
         return stock;
     }
 
-    //TODO: if we implement layout changes to and from portrait we will have to store search bars and maybe table lists
+    //This part is used to save information on stock search that the user last made.
+    //setter method for search term
     public void setSearchTerm(String term) {
         search.setValue(term);
     }
 
+    //getter method for search term
     public LiveData<String> getSearchTerm() {
         return search;
     }
