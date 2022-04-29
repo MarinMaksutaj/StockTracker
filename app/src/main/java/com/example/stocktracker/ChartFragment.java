@@ -48,6 +48,8 @@ import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 
 import android.os.IBinder;
 import android.os.StrictMode;
@@ -95,6 +97,8 @@ public class ChartFragment extends Fragment {
     private WebView webView;
     private TextView titleTextView;
     private GraphAPIManager grapher;
+    private SharedViewModel model;
+    private TextView chartTitle;
 
 
     public ChartFragment() {
@@ -127,7 +131,8 @@ public class ChartFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        // get the webview
+        // create
+        model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
     }
 
@@ -187,26 +192,35 @@ public class ChartFragment extends Fragment {
         webView = (WebView) view.findViewById(R.id.webview);
         titleTextView = (TextView) view.findViewById(R.id.textView6);
         grapher = new GraphAPIManager();
+
+        //get the correct stock to graph
+        System.out.println("Model value onCreateView: "+ model.getStock().getValue());
         File file = new File(containerActivity.getFilesDir(), "stocks.txt");
         tickerGraphed = "";
         if (!file.exists()) {
             tickerGraphed = "AAPL";
         } else {
-            FileReader reader = null;
-            try {
-                reader = new FileReader(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            BufferedReader br = new BufferedReader(reader);
+            //Read first stock in list if we run for the first time
+            if(model.getStock().getValue() == null) {
+                FileReader reader = null;
+                try {
+                    reader = new FileReader(file);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                BufferedReader br = new BufferedReader(reader);
 
-            try {
-                String nonEmpty = br.readLine();
-                if(nonEmpty!=null) tickerGraphed = nonEmpty.trim(); // list existed but deleted
-                else tickerGraphed = "AAPL";
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                try {
+                    String nonEmpty = br.readLine();
+                    if (nonEmpty != null)
+                        tickerGraphed = nonEmpty.trim(); // list existed but deleted
+                    else tickerGraphed = "AAPL";
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                alertViewModel(tickerGraphed);
+            //We have a nun null ViewModel from where we can read from
+            } else tickerGraphed = model.getStock().getValue();
         }
 
         
@@ -250,6 +264,10 @@ public class ChartFragment extends Fragment {
 
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
+    }
+
+    private void alertViewModel(String stock){
+        model.setStock(stock);
     }
 
     @Override
@@ -496,9 +514,11 @@ public class ChartFragment extends Fragment {
                          String stockSymbol = textView.getText().toString();
                          System.out.println("switched");
                          tickerGraphed = stockSymbol;
-                         TextView stockTitle = containerActivity.findViewById(R.id.textView6);
-                         stockTitle.setText(tickerGraphed + " Chart");
+
+                         titleTextView.setText(tickerGraphed + " Chart");
+
                          notifyNewsOfStockChange(stockSymbol);
+                         alertViewModel(tickerGraphed);
                      }
                  });
             imageView.setOnClickListener(new View.OnClickListener() {
