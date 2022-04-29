@@ -69,7 +69,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import com.google.type.DateTime;
+//import com.google.type.DateTime;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -512,8 +512,11 @@ public class ChartFragment extends Fragment {
                      public void onClick(View v) {
                          // get the stock symbol
                          String stockSymbol = textView.getText().toString();
+                         System.out.println("switched");
                          tickerGraphed = stockSymbol;
-                         titleTextView.setText(tickerGraphed+" Chart");
+
+                         titleTextView.setText(tickerGraphed + " Chart");
+
                          notifyNewsOfStockChange(stockSymbol);
                          alertViewModel(tickerGraphed);
                      }
