@@ -30,6 +30,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 
 import android.app.Service;
@@ -47,6 +48,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
@@ -97,9 +99,11 @@ public class ChartFragment extends Fragment {
     private String tickerGraphed;
     public Activity containerActivity = null;
     private WebView webView;
+    private WebView tempWebView;
     private TextView titleTextView;
     private GraphAPIManager grapher;
     private SharedViewModel model;
+    private ConstraintLayout layout;
 
 
     public ChartFragment() {
@@ -173,10 +177,11 @@ public class ChartFragment extends Fragment {
         // create a custom adapter
         listView.setAdapter(new ListAdapter(containerActivity, stockSymbol));
         //restart grapher if we stopped it to save resources
-        if( grapher.isCancelled() ){
+        if( grapher.isCancelled() || grapher.getStatus() == AsyncTask.Status.PENDING){
             grapher.execute();
             System.out.println("grapher started on ONSTART");
         }
+        animateEntrance();
 
     }
 
@@ -197,7 +202,9 @@ public class ChartFragment extends Fragment {
         System.out.println("CREATED");
         view = inflater.inflate(R.layout.fragment_chart, container, false);
         webView = (WebView) view.findViewById(R.id.webview);
+        //tempWebView = (WebView) view.findViewById(R.id.tempWebview);
         titleTextView = (TextView) view.findViewById(R.id.textView6);
+        layout = view.findViewById(R.id.chartFragment);
         grapher = new GraphAPIManager();
 
         //get the correct stock to graph
@@ -289,6 +296,24 @@ public class ChartFragment extends Fragment {
         grapher.cancel(true);
     }
 
+    private void animateEntrance() {
+        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        int from = model.getFrom().getValue();
+        int to = 0;
+        if(from == to ) return;
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        containerActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        if(from > 0 ) width = width*(-1);
+        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout, "translationX", width);
+        animatorX.setDuration(0); // Milliseconds
+        animatorX.start();
+        animatorX = ObjectAnimator.ofFloat(layout, "translationX", 0);
+        animatorX.setDuration(300); // Milliseconds
+        animatorX.start();
+        model.setFrom(0);
+    }
+
     public void notifyNewsOfStockChange(String ticker){
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -316,17 +341,17 @@ public class ChartFragment extends Fragment {
             System.out.println(date1 + " vs " + date2);
             SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
             String tickerDuration = "minute";//TODO: this has to be adjusted to work properly once api_key is "paid"
+            int fetchNumber = sharedPref.getInt(getString(R.string.tickers_setting), 10);
             if(sharedPref.getBoolean(getString(R.string.hourly_setting), false)) tickerDuration = "hour";
             while (true) {
                 if(grapher.isCancelled()) return null;
                 //we need the proper api_key access to really test the url, we fetch end of the day data.
                 String apiCall = "https://api.polygon.io/v2/aggs/ticker/" + tickerGraphed +
-                        "/range/1/"+tickerDuration+"/" + date1 + "/" + date2 + "?sort=asc&limit=50&apiKey=" +
+                        "/range/1/"+tickerDuration+"/" + date1 + "/" + date2 + "?sort=asc&limit="+fetchNumber+"&apiKey=" +
                         getResources().getString(R.string.API_KEY);
-                System.out.println("Background was run");
+                System.out.println(apiCall);
                 try {
                     URL url = new URL(apiCall);
-                    System.out.println("test");
                     BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
                     StringBuilder sb = new StringBuilder();
                     String line = null;
@@ -356,6 +381,7 @@ public class ChartFragment extends Fragment {
                         public void run() {
                             webView.getSettings().setJavaScriptEnabled(true);
                             webView.loadData(finalHtml, "text/html", "UTF-8");
+                            //empWebView = webView ;
                         }
                     });
 
@@ -396,6 +422,9 @@ public class ChartFragment extends Fragment {
                 stockDataString += high;
                 String volume = stockData.getString("v");
                 stockDataString += "],\n";
+
+                //Date date = new Date(stockData.getInt("t"));
+                //System.out.println(date);
             }
             System.out.println(stockDataString);
             String trend = "";
@@ -415,7 +444,7 @@ public class ChartFragment extends Fragment {
                     "    ], true);\n" +
                     "\n" +
                     "    var options = {\n" +
-                    "      'chartArea': {'width': '85%', 'height': '80%'},"+
+                    "      'chartArea': {'width': '80%', 'height': '80%'},"+
                     "      legend:'none',\n" +trend+
                     "    };\n" +
                     "\n" +
@@ -465,7 +494,7 @@ public class ChartFragment extends Fragment {
                     "    ], true);\n" +
                     "\n" +
                     "    var options = {\n" +
-                    "      'chartArea': {'width': '85%', 'height': '80%'},"+
+                    "      'chartArea': {'width': '80%', 'height': '80%'},"+
                     "      legend:'none',\n" +trend+
                     "    };\n" +
                     "\n" +

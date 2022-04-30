@@ -1,15 +1,21 @@
 package com.example.stocktracker;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 /**
@@ -28,6 +34,8 @@ public class SettingsFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     public Activity containerActivity = null;
+    private ConstraintLayout layout;
+    private TextView tickerText;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -65,6 +73,10 @@ public class SettingsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
+        //Animate entrance
+        layout = view.findViewById(R.id.settingsFragment);
+        //tickers Text
+        tickerText = view.findViewById(R.id.tickersPerChartText);
         //we read all settings from same sharedPrefences variable
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         //set up for first option in settings
@@ -76,7 +88,6 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 //we then change the setting once toggle is clicked
-                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean(getString(R.string.line_graph), firstSetting.isChecked());
                 editor.apply();
@@ -92,7 +103,6 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 //we then change the setting once toggle is clicked
-                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean(getString(R.string.length_news), secondSetting.isChecked());
                 editor.apply();
@@ -108,7 +118,6 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 //we then change the setting once toggle is clicked
-                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean(getString(R.string.trend_toggle), thirdSetting.isChecked());
                 editor.apply();
@@ -124,15 +133,106 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 //we then change the setting once toggle is clicked
-                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean(getString(R.string.hourly_setting), fourthSetting.isChecked());
                 editor.apply();
             }
         });
 
+        //set up for fourth option in settings
+        //first we read current saved setting from shared pref
+        int tickersPerChart = sharedPref.getInt(getString(R.string.tickers_setting), 10);
+        SeekBar seekBar = (SeekBar) view.findViewById(R.id.tickersPerChartSeekBar);
+        seekBar.setProgress( tickersPerChart );
+        tickerText.setText( getResources().getString(R.string.tickersPerChart)+tickersPerChart);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress , boolean fromUser) {
+                //we change the new value to display
+                tickerText.setText( getResources().getString(R.string.tickersPerChart)+progress);
+                //we then change the stored value for tickers to display
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(getString(R.string.tickers_setting), progress);
+                editor.apply();
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        //exiting animation
+        //if not remained in the same one
+        System.out.println("onResume");
+        animateEntrance();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        //exiting animation
+        //if not remained in the same one
+        System.out.println("onPause");
+        animateExit();
+    }
+
+    private void animateEntrance() {
+        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        int from = model.getFrom().getValue();
+        int to = 3;
+        if(from == to ) return;
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        containerActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        if(from > 3 ) width = width*(-1);
+        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout, "translationX", width);
+        animatorX.setDuration(0); // Milliseconds
+        animatorX.start();
+        animatorX = ObjectAnimator.ofFloat(layout, "translationX", 0);
+        animatorX.setDuration(300); // Milliseconds
+        animatorX.start();
+        model.setFrom(3);
+    }
+
+    public void animateExit() {
+        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        int from = 3;
+        int to = model.getTo().getValue();
+        if( to == 3 ) return;
+        System.out.println("onAnimateExit1");
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        containerActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        if(to > 3 ) width = width*(-1);
+        System.out.println(width);
+        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout, "translationX", width);
+        animatorX.setDuration(500); // Milliseconds
+        animatorX.start();
+        /**
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+         */
+        System.out.println("onAnimateExit2");
+
+    }
+
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
     }

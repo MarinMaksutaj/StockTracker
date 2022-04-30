@@ -23,6 +23,8 @@
     <string name="hourly_setting">Hourly graph</string>
     <string name="sendButton">Send Email</string>
     <string name="sendEmailText">Select from contacts with email:</string>
+    <string name="tickersPerChart">"Max entries per chart: "</string>
+    <string name="tickers_setting">TICKERS_SETTING</string>
 
 
 </resources>

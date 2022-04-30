@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -15,9 +16,11 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,6 +66,7 @@ public class NewsFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     public Activity containerActivity = null;
+    private ConstraintLayout layout = null;
     List<HashMap<String, String>> aList;
     SimpleAdapter simpleAdapter;
     String titles[] = {};
@@ -102,10 +106,17 @@ public class NewsFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        animateEntrance();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_news, container, false);
         newsLV = v.findViewById(R.id.newsListView);
+        layout = v.findViewById(R.id.newsFragment);
         TextView title = v.findViewById(R.id.newsTextView);
         //we read what stock is currently graph, to fetch its news
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -126,6 +137,24 @@ public class NewsFragment extends Fragment {
     }
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
+    }
+
+    private void animateEntrance() {
+        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        int from = model.getFrom().getValue();
+        int to = 2;
+        if(from == to ) return;
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        containerActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        if(from > 2 ) width = width*(-1);
+        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout, "translationX", width);
+        animatorX.setDuration(0); // Milliseconds
+        animatorX.start();
+        animatorX = ObjectAnimator.ofFloat(layout, "translationX", 0);
+        animatorX.setDuration(300); // Milliseconds
+        animatorX.start();
+        model.setFrom(2);
     }
 
     private class NewsAPICallManager extends AsyncTask<String, String, String> {

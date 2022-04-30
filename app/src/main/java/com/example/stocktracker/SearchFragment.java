@@ -1,13 +1,16 @@
 package com.example.stocktracker;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.FileUtils;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,6 +61,7 @@ public class SearchFragment extends Fragment {
     public Activity containerActivity = null;
     public ListView searchLV = null;
     public EditText searchET = null;
+    private ConstraintLayout layout;
     List<HashMap<String, String>> aList;
     SimpleAdapter simpleAdapter;
     String ticker[] = {};
@@ -96,6 +100,12 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        animateEntrance();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -103,6 +113,7 @@ public class SearchFragment extends Fragment {
         Button searchButton = view.findViewById(R.id.searchButton);
         searchLV = view.findViewById(R.id.searchListView);
         searchET = view.findViewById(R.id.searchEditText);
+        layout = view.findViewById(R.id.searchFragment);
         SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         searchButton.setOnClickListener(new View.OnClickListener() {
@@ -123,6 +134,24 @@ public class SearchFragment extends Fragment {
     }
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
+    }
+
+    private void animateEntrance() {
+        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        int from = model.getFrom().getValue();
+        int to = 1;
+        if(from == to ) return;
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        containerActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        if(from > 1 ) width = width*(-1);
+        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout, "translationX", width);
+        animatorX.setDuration(0); // Milliseconds
+        animatorX.start();
+        animatorX = ObjectAnimator.ofFloat(layout, "translationX", 0);
+        animatorX.setDuration(300); // Milliseconds
+        animatorX.start();
+        model.setFrom(1);
     }
 
     private class SearchAPIManager extends AsyncTask<String, String, String> {
