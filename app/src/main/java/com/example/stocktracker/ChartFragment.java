@@ -347,7 +347,7 @@ public class ChartFragment extends Fragment {
                 if(grapher.isCancelled()) return null;
                 //we need the proper api_key access to really test the url, we fetch end of the day data.
                 String apiCall = "https://api.polygon.io/v2/aggs/ticker/" + tickerGraphed +
-                        "/range/1/"+tickerDuration+"/" + date1 + "/" + date2 + "?sort=asc&limit="+fetchNumber+"&apiKey=" +
+                        "/range/1/"+tickerDuration+"/" + date1 + "/" + date2 + "?sort=desc&limit="+fetchNumber+"&apiKey=" +
                         getResources().getString(R.string.API_KEY);
                 System.out.println(apiCall);
                 try {
@@ -381,7 +381,7 @@ public class ChartFragment extends Fragment {
                         public void run() {
                             webView.getSettings().setJavaScriptEnabled(true);
                             webView.loadData(finalHtml, "text/html", "UTF-8");
-                            //empWebView = webView ;
+                            //TempWebView = webView ;
                         }
                     });
 
