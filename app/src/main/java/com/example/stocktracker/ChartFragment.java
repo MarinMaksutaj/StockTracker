@@ -335,7 +335,7 @@ public class ChartFragment extends Fragment {
             Calendar cal = Calendar.getInstance();
 
             //remove 4 days to pool information from at least the last 4 days
-            cal.add(Calendar.DATE, -5);
+            cal.add(Calendar.DATE, -30);
             String date1 = dateFormat.format(cal.getTime());
             String date2 = dateFormat.format(new Date());
             System.out.println(date1 + " vs " + date2);
