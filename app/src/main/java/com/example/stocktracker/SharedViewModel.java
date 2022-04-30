@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel;
 public class SharedViewModel extends ViewModel {
     private final MutableLiveData<String> stock = new MutableLiveData<String>();
     private final MutableLiveData<String> search = new MutableLiveData<String>();
+    private final MutableLiveData<Integer> from = new MutableLiveData<Integer>();
+    private final MutableLiveData<Integer> to = new MutableLiveData<Integer>();
 
 
     //the following two methods help two fragments communicate on which current stocks we are graphing.
@@ -14,7 +16,6 @@ public class SharedViewModel extends ViewModel {
     public void setStock(String ticker) {
         stock.setValue(ticker);
     }
-
     //get method for currect stock
     public LiveData<String> getStock() {
         return stock;
@@ -25,9 +26,26 @@ public class SharedViewModel extends ViewModel {
     public void setSearchTerm(String term) {
         search.setValue(term);
     }
-
     //getter method for search term
     public LiveData<String> getSearchTerm() {
         return search;
     }
+
+    //This part is used to save history from the user's travelling inside de app for animations purposes
+    //setter method for get index we are coming from
+    public void setFrom(int term) { from.setValue(term);}
+    //getter method for get index we are coming from
+    public LiveData<Integer> getFrom() {
+        return from;
+    }
+    //setter method for get index we are going to
+    public void setTo(int term) {
+        to.setValue(term);
+    }
+    //getter method for get index we are going to
+    public LiveData<Integer> getTo() {
+        return to;
+    }
+
+
 }
