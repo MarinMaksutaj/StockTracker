@@ -155,6 +155,7 @@ public class ChartFragment extends Fragment {
         BufferedReader br = new BufferedReader(reader);
         ArrayList stockSymbol = new ArrayList();
         while (true) {
+
             try {
                 String line = br.readLine();
                 if (line == null) {
@@ -171,6 +172,11 @@ public class ChartFragment extends Fragment {
 
         // create a custom adapter
         listView.setAdapter(new ListAdapter(containerActivity, stockSymbol));
+        //restart grapher if we stopped it to save resources
+        if( grapher.isCancelled() ){
+            grapher.execute();
+            System.out.println("grapher started on ONSTART");
+        }
 
     }
 
@@ -259,7 +265,12 @@ public class ChartFragment extends Fragment {
         });
 
         notifyNewsOfStockChange(tickerGraphed);
-        grapher.execute();
+        System.out.println("is cancelled "+grapher.isCancelled());
+        System.out.println();
+        if (grapher.isCancelled()||grapher.getStatus() == AsyncTask.Status.PENDING  ) {
+            grapher.execute();
+            System.out.println("grapher started on onCreateView");
+        }
         return view;
     }
 
@@ -272,8 +283,9 @@ public class ChartFragment extends Fragment {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStop() {
+        super.onStop();
+        //pause grapher to save resources while we share chart or screen is minimized
         grapher.cancel(true);
     }
 
@@ -306,6 +318,7 @@ public class ChartFragment extends Fragment {
             String tickerDuration = "minute";//TODO: this has to be adjusted to work properly once api_key is "paid"
             if(sharedPref.getBoolean(getString(R.string.hourly_setting), false)) tickerDuration = "hour";
             while (true) {
+                if(grapher.isCancelled()) return null;
                 //we need the proper api_key access to really test the url, we fetch end of the day data.
                 String apiCall = "https://api.polygon.io/v2/aggs/ticker/" + tickerGraphed +
                         "/range/1/"+tickerDuration+"/" + date1 + "/" + date2 + "?sort=asc&limit=50&apiKey=" +
