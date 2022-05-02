@@ -139,7 +139,22 @@ public class SettingsFragment extends Fragment {
             }
         });
 
-        //set up for fourth option in settings
+        //set up for fifth option in settings
+        //Settings for refreshign or not the graphs.
+        boolean refreshes = sharedPref.getBoolean(getString(R.string.refreshes_toggle), false);
+        ToggleButton fifthToggle = (ToggleButton) view.findViewById(R.id.refreshSettingToggle);
+        fifthToggle.setChecked(refreshes);
+        fifthToggle.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                //we then change the setting once toggle is clicked
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(getString(R.string.refreshes_toggle), fifthToggle.isChecked());
+                editor.apply();
+            }
+        });
+
+        //set up for sixth option in settings
         //first we read current saved setting from shared pref
         int tickersPerChart = sharedPref.getInt(getString(R.string.tickers_setting), 10);
         SeekBar seekBar = (SeekBar) view.findViewById(R.id.tickersPerChartSeekBar);

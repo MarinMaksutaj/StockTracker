@@ -3,8 +3,11 @@ package com.example.stocktracker;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 public class MainActivity extends AppCompatActivity {
     NavTabBarFragment nav = null;
@@ -20,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
+
         model = new ViewModelProvider( this ).get(SharedViewModel.class);
         model.setFrom(0);
         model.setTo(0);

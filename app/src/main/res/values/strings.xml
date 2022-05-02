@@ -6,7 +6,7 @@
     <string name="API_KEY">lpzlmSvKEa918KkOWC8qqmQ8pN_cnf3p</string>
     <string name="share_button">Share</string>
     <string name="settings_title">Settings</string>
-    <string name="news_title">News for ticker: </string>
+    <string name="news_title">"News for ticker: "</string>
     <string name="search_text">Search for a ticker symbol to add to your list.</string>
     <string name="stocks_section">In the first section of the app titled StockData you can get the latest stock prices through the graph and see a list of your favorite stocks!</string>
     <string name="search_section">The second section of the application will allow you to search for different ticker symbols, and if preferred add them into your favorite list to later check that stock\'s particular price graph</string>
@@ -23,8 +23,10 @@
     <string name="hourly_setting">Hourly graph</string>
     <string name="sendButton">Send Email</string>
     <string name="sendEmailText">Select from contacts with email:</string>
-    <string name="tickersPerChart">"Max entries per chart: "</string>
+    <string name="tickersPerChart">"Approximate entries per chart: "</string>
     <string name="tickers_setting">TICKERS_SETTING</string>
+    <string name="refreshes_setting">Refreshing graph</string>
+    <string name="refreshes_toggle">REFRESHES_SETTING</string>
 
 
 </resources>
