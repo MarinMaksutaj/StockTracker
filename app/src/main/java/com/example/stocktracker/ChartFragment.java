@@ -4,46 +4,27 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-
-import java.util.Random;
-import java.util.stream.Collectors;
 
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 
-import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -51,26 +32,18 @@ import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 
-import android.os.IBinder;
 import android.os.StrictMode;
 import android.provider.MediaStore;
-import android.text.format.DateUtils;
 import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 //import com.google.type.DateTime;
@@ -104,6 +77,7 @@ public class ChartFragment extends Fragment {
     private GraphAPIManager grapher;
     private SharedViewModel model;
     private ConstraintLayout layout;
+    private Boolean refreshes;
 
 
     public ChartFragment() {
@@ -178,6 +152,7 @@ public class ChartFragment extends Fragment {
         listView.setAdapter(new ListAdapter(containerActivity, stockSymbol));
         //restart grapher if we stopped it to save resources
         if( grapher.isCancelled() || grapher.getStatus() == AsyncTask.Status.PENDING){
+            grapher = new GraphAPIManager();
             grapher.execute();
             System.out.println("grapher started on ONSTART");
         }
@@ -202,13 +177,11 @@ public class ChartFragment extends Fragment {
         System.out.println("CREATED");
         view = inflater.inflate(R.layout.fragment_chart, container, false);
         webView = (WebView) view.findViewById(R.id.webview);
-        //tempWebView = (WebView) view.findViewById(R.id.tempWebview);
         titleTextView = (TextView) view.findViewById(R.id.textView6);
         layout = view.findViewById(R.id.chartFragment);
         grapher = new GraphAPIManager();
 
         //get the correct stock to graph
-        System.out.println("Model value onCreateView: "+ model.getStock().getValue());
         File file = new File(containerActivity.getFilesDir(), "stocks.txt");
         tickerGraphed = "";
         if (!file.exists()) {
@@ -323,6 +296,7 @@ public class ChartFragment extends Fragment {
     }
 
     private class GraphAPIManager extends AsyncTask<String, String, String> {
+        String html = "";
 
 
         @RequiresApi(api = Build.VERSION_CODES.O)
@@ -335,14 +309,18 @@ public class ChartFragment extends Fragment {
             Calendar cal = Calendar.getInstance();
 
             //remove 4 days to pool information from at least the last 4 days
-            cal.add(Calendar.DATE, -30);
+            cal.add(Calendar.DATE, -7);
             String date1 = dateFormat.format(cal.getTime());
             String date2 = dateFormat.format(new Date());
             System.out.println(date1 + " vs " + date2);
             SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-            String tickerDuration = "minute";//TODO: this has to be adjusted to work properly once api_key is "paid"
+            String tickerDuration = "minute";
             int fetchNumber = sharedPref.getInt(getString(R.string.tickers_setting), 10);
-            if(sharedPref.getBoolean(getString(R.string.hourly_setting), false)) tickerDuration = "hour";
+            if(sharedPref.getBoolean(getString(R.string.hourly_setting), false)){
+                tickerDuration = "hour";
+                fetchNumber = fetchNumber *60;
+            }
+            refreshes = sharedPref.getBoolean(getString(R.string.refreshes_toggle), false);
             while (true) {
                 if(grapher.isCancelled()) return null;
                 //we need the proper api_key access to really test the url, we fetch end of the day data.
@@ -370,24 +348,24 @@ public class ChartFragment extends Fragment {
 
                     boolean isLined = sharedPref.getBoolean(getString(R.string.line_graph), false);
                     boolean hasTrend = sharedPref.getBoolean(getString(R.string.trend_toggle), false);
-                    String html="";
+                    html="";
                     if (isLined) html = lineGraphGenerator(data, hasTrend);
                     else html = candleGraphGenerator(data, hasTrend);
 
                     // update the webview on the UI thread
-                    String finalHtml = html;
                     containerActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             webView.getSettings().setJavaScriptEnabled(true);
-                            webView.loadData(finalHtml, "text/html", "UTF-8");
-                            //TempWebView = webView ;
+                            webView.loadData(html, "text/html", "UTF-8");
                         }
                     });
-
-
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
+                }
+                if(!refreshes){
+                    //grapher.cancel(true);
+                    return null;
                 }
 
                 try {
@@ -405,9 +383,8 @@ public class ChartFragment extends Fragment {
         @RequiresApi(api = Build.VERSION_CODES.O)
         private String candleGraphGenerator(JSONArray data, boolean hasTrend) throws JSONException {
             String stockDataString = "";
-            int fetchSize = data.length() - 30; //prevents we have least values than what we are trying to graph
-            if(fetchSize<0) fetchSize = 0;
-            for (int i = fetchSize; i < data.length(); i++) {
+
+            for (int i = 0; i < data.length(); i++) {
                 stockDataString += "[ new Date(";
                 JSONObject stockData = data.getJSONObject(i);
                 String time = stockData.getString("t");
@@ -465,9 +442,9 @@ public class ChartFragment extends Fragment {
         @RequiresApi(api = Build.VERSION_CODES.O)
         private String lineGraphGenerator(JSONArray data, boolean hasTrend) throws JSONException {
             String stockDataString = "";
-            int fetchSize = data.length() - 30; //prevents we have least values than what we are trying to graph
-            if(fetchSize<0) fetchSize = 0;
-            for (int i = fetchSize; i < data.length(); i++) {
+
+
+            for (int i = 0; i < data.length(); i++) {
                 stockDataString += "[ new Date(";
                 JSONObject stockData = data.getJSONObject(i);
                 String time = stockData.getString("t");
@@ -509,12 +486,8 @@ public class ChartFragment extends Fragment {
                     "  </body>\n" +
                     "</html>";
             return html;
-
         }
 
-        @Override
-        protected void onPostExecute(String result){
-        }
     }
 
 
@@ -565,6 +538,10 @@ public class ChartFragment extends Fragment {
 
                          notifyNewsOfStockChange(stockSymbol);
                          alertViewModel(tickerGraphed);
+                         if(!refreshes) {
+                             grapher = new GraphAPIManager();
+                             grapher.execute();
+                         }
                      }
                  });
             imageView.setOnClickListener(new View.OnClickListener() {

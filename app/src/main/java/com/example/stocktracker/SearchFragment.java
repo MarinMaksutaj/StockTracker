@@ -11,9 +11,11 @@ import androidx.lifecycle.ViewModelProvider;
 
 import android.os.FileUtils;
 import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -116,6 +118,7 @@ public class SearchFragment extends Fragment {
         layout = view.findViewById(R.id.searchFragment);
         SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
+        //add listener to the search button
         searchButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String text = String.valueOf(searchET.getText());
@@ -126,6 +129,46 @@ public class SearchFragment extends Fragment {
                 new SearchAPIManager().execute(text);
             }
         });
+
+
+        /**
+        //add listner to the virtual keyboard from editText
+        searchET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+
+            @Override
+            public boolean onEditorAction(TextView v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    // hide virtual keyboard
+                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(containerActivity.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(searchET.getWindowToken(), 0);
+                    return true;
+                }
+                return false;
+            }
+        });
+         */
+        searchET.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                // If the event is a key-down event on the "enter" button
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    // Perform action on key press
+                    String text = String.valueOf(searchET.getText());
+                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(containerActivity.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(searchET.getWindowToken(), 0);
+                    if (text.length() == 0)
+
+                        return true;
+                    else
+                        model.setSearchTerm(text);
+                    new SearchAPIManager().execute(text);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        //automatically refetch the last searched term to look like how it was left off
         if( model.getSearchTerm().getValue() != null){
             searchET.setText(model.getSearchTerm().getValue());
         }
