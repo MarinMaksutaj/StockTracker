@@ -1,14 +1,11 @@
 package com.example.stocktracker;
-
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-
 import android.os.FileUtils;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -23,11 +20,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -45,19 +40,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SearchFragment#newInstance} factory method to
- * create an instance of this fragment.
+/*
+ * @author: Hector Beltran & Marin Maksutaj
+ * @description: This is the SearchFragment class. It is used to display the search
+ *            screen. It provides the users with a list of ticker symbols that
+ *           they can add to their favorites.
  */
 public class SearchFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
     public Activity containerActivity = null;
@@ -70,19 +63,17 @@ public class SearchFragment extends Fragment {
     String name[] = {};
     String market[] = {};
 
+    /*
+    * This is the constructor for the SearchFragment class.
+    */
     public SearchFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SearchFragment.
-     */
-    // TODO: Rename and change types and number of parameters
+    /*
+    * This is the newInstance method. It is used to create a new instance of the
+    * class with the given parameters.
+    */
     public static SearchFragment newInstance(String param1, String param2) {
         SearchFragment fragment = new SearchFragment();
         Bundle args = new Bundle();
@@ -93,6 +84,9 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
+    /*
+    * This is the onCreate method. It is used to create the view for the fragment.
+    */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -102,12 +96,18 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
+    /*
+    * This is the onResume method. It is triggered when the fragment is resumed.
+    */
     public void onResume() {
         super.onResume();
         animateEntrance();
     }
 
     @Override
+    /*
+    * This is the onCreateView method. It is used to create the view for the fragment.
+    */
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -116,7 +116,8 @@ public class SearchFragment extends Fragment {
         searchLV = view.findViewById(R.id.searchListView);
         searchET = view.findViewById(R.id.searchEditText);
         layout = view.findViewById(R.id.searchFragment);
-        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        SharedViewModel model = new ViewModelProvider(requireActivity())
+                .get(SharedViewModel.class);
 
         //add listener to the search button
         searchButton.setOnClickListener(new View.OnClickListener() {
@@ -130,23 +131,6 @@ public class SearchFragment extends Fragment {
             }
         });
 
-
-        /**
-        //add listner to the virtual keyboard from editText
-        searchET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-
-            @Override
-            public boolean onEditorAction(TextView v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    // hide virtual keyboard
-                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(containerActivity.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(searchET.getWindowToken(), 0);
-                    return true;
-                }
-                return false;
-            }
-        });
-         */
         searchET.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
@@ -154,7 +138,8 @@ public class SearchFragment extends Fragment {
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
                     String text = String.valueOf(searchET.getText());
-                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(containerActivity.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager)
+                            getContext().getSystemService(containerActivity.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(searchET.getWindowToken(), 0);
                     if (text.length() == 0)
 
@@ -167,7 +152,6 @@ public class SearchFragment extends Fragment {
                 return false;
             }
         });
-
         //automatically refetch the last searched term to look like how it was left off
         if( model.getSearchTerm().getValue() != null){
             searchET.setText(model.getSearchTerm().getValue());
@@ -175,12 +159,19 @@ public class SearchFragment extends Fragment {
         new SearchAPIManager().execute(model.getSearchTerm().getValue());
         return view;
     }
+    /*
+    * The setContainerActivity method is used to set the container activity.
+    */
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
     }
 
+    /*
+    * The animateEntrance method is used to animate the entrance of the fragment.
+    */
     private void animateEntrance() {
-        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        SharedViewModel model = new ViewModelProvider(requireActivity()).
+                get(SharedViewModel.class);
         int from = model.getFrom().getValue();
         int to = 1;
         if(from == to ) return;
@@ -188,7 +179,8 @@ public class SearchFragment extends Fragment {
         containerActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
         if(from > 1 ) width = width*(-1);
-        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout, "translationX", width);
+        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout,
+                "translationX", width);
         animatorX.setDuration(0); // Milliseconds
         animatorX.start();
         animatorX = ObjectAnimator.ofFloat(layout, "translationX", 0);
@@ -197,16 +189,22 @@ public class SearchFragment extends Fragment {
         model.setFrom(1);
     }
 
+    /*
+    * The SearchAPIManager class is used to fetch the ticker symbols from the
+    * search API.
+    */
     private class SearchAPIManager extends AsyncTask<String, String, String> {
-
-
         @Override
+        /*
+        * The doInBackground method is used to fetch the ticker symbols from the
+        * search API.
+        */
         protected String doInBackground(String... params) {
             String searchTerm = params[0];
             if(searchTerm == null) return null;
-            System.out.println(searchTerm);
             String key = getResources().getString(R.string.API_KEY);
-            String urlString= "https://api.polygon.io/v3/reference/tickers?search="+searchTerm+"&active=true&sort=ticker&order=asc&limit=30&apiKey="+key;
+            String urlString= "https://api.polygon.io/v3/reference/tickers?search="
+            +searchTerm+"&active=true&sort=ticker&order=asc&limit=30&apiKey="+key;
             aList = new ArrayList<HashMap<String, String>>();
             JSONObject result = new JSONObject();
             URL url = null;
@@ -224,7 +222,6 @@ public class SearchFragment extends Fragment {
                         .collect(Collectors.joining("\n"));
                 stream.close();
                 JSONObject obj = new JSONObject(text);
-                System.out.println(obj);
                 JSONArray r = (JSONArray) obj.get("results");
                 market = new String[r.length()];
                 ticker = new String[r.length()];
@@ -248,6 +245,9 @@ public class SearchFragment extends Fragment {
         }
 
         @Override
+        /*
+        * The onPostExecute method is used to update the list view with the ticker symbols.
+        */
         protected void onPostExecute(String result){
             if(ticker.length==0){
                 return;
@@ -262,7 +262,8 @@ public class SearchFragment extends Fragment {
             }
             String[] from = {"tickerText","nameText", "marketText"};
             int[] to = {R.id.tickerText, R.id.nameText, R.id.marketText};
-            simpleAdapter = new SimpleAdapter(containerActivity, aList, R.layout.search_row_layout, from , to);
+            simpleAdapter = new SimpleAdapter(containerActivity,
+                    aList, R.layout.search_row_layout, from , to);
             searchLV.setAdapter(simpleAdapter);
             searchLV.setOnItemClickListener(new AdapterView.OnItemClickListener(){
                 @Override
@@ -280,12 +281,15 @@ public class SearchFragment extends Fragment {
                         e.printStackTrace();
                     }
                     try {
-                        BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
+                        BufferedWriter writer = new BufferedWriter(
+                                new FileWriter(file, true));
                         if (currentStocks.contains(symbol)) {
                             containerActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(containerActivity);
+                                    android.app.AlertDialog.Builder builder =
+                                            new android.app.AlertDialog.
+                                                    Builder(containerActivity);
                                     builder.setMessage("Stock already exists!");
                                     builder.setPositiveButton("OK", null);
                                     builder.show();
@@ -295,12 +299,12 @@ public class SearchFragment extends Fragment {
                         }
                         writer.write(symbol + "\n");
                         writer.close();
-                        System.out.println("write successful");
                         // create a pop up to show the user that the stock was added
                         containerActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(containerActivity);
+                                android.app.AlertDialog.Builder builder =
+                                        new android.app.AlertDialog.Builder(containerActivity);
                                 builder.setMessage("Stock added!");
                                 builder.setPositiveButton("OK", null);
                                 builder.show();

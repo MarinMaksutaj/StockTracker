@@ -18,38 +18,34 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SettingsFragment#newInstance} factory method to
- * create an instance of this fragment.
+/*
+ * @author: Hector Beltran & Marin Maksutaj
+ * @description: This is the SettingsFragment class. It is used to display the settings
+ *             screen. It provides the users of the app with a list of settings.
  */
 public class SettingsFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
     public Activity containerActivity = null;
     private ConstraintLayout layout;
     private TextView tickerText;
 
+    /*
+    * This is the constructor for the class.
+    */
     public SettingsFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SettingsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
+    /*
+    * This is the newInstance method for the class.
+    * It is used to create a new instance of the
+    * class with the given parameters.
+    */
     public static SettingsFragment newInstance(String param1, String param2) {
         SettingsFragment fragment = new SettingsFragment();
         Bundle args = new Bundle();
@@ -60,6 +56,9 @@ public class SettingsFragment extends Fragment {
     }
 
     @Override
+    /*
+    * This is the onCreate method for the class. It is used to initialize the class.
+    */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -69,6 +68,10 @@ public class SettingsFragment extends Fragment {
     }
 
     @Override
+    /*
+    * This is the oncreateView method for the class. It is used to create the view for the
+    * fragment.
+    */
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -82,7 +85,8 @@ public class SettingsFragment extends Fragment {
         //set up for first option in settings
         //first we read current saved setting from shared pref
         boolean state = sharedPref.getBoolean(getString(R.string.line_graph), false);
-        ToggleButton firstSetting = (ToggleButton) view.findViewById(R.id.linegraphSettingToggle);
+        ToggleButton firstSetting = (ToggleButton)
+                view.findViewById(R.id.linegraphSettingToggle);
         firstSetting.setChecked(state);
         firstSetting.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -97,7 +101,8 @@ public class SettingsFragment extends Fragment {
         //set up for second option in settings
         //first we read current saved setting from shared pref
         boolean lengthy = sharedPref.getBoolean(getString(R.string.length_news), false);
-        ToggleButton secondSetting = (ToggleButton) view.findViewById(R.id.lengthSettingToggle);
+        ToggleButton secondSetting = (ToggleButton)
+                view.findViewById(R.id.lengthSettingToggle);
         secondSetting.setChecked(lengthy);
         secondSetting.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -112,7 +117,8 @@ public class SettingsFragment extends Fragment {
         //set up for third option in settings
         //first we read current saved setting from shared pref
         boolean trend = sharedPref.getBoolean(getString(R.string.trend_toggle), false);
-        ToggleButton thirdSetting = (ToggleButton) view.findViewById(R.id.trendSettingsToggle);
+        ToggleButton thirdSetting = (ToggleButton)
+                view.findViewById(R.id.trendSettingsToggle);
         thirdSetting.setChecked(trend);
         thirdSetting.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -127,7 +133,8 @@ public class SettingsFragment extends Fragment {
         //set up for fourth option in settings
         //first we read current saved setting from shared pref
         boolean hourly = sharedPref.getBoolean(getString(R.string.hourly_setting), false);
-        ToggleButton fourthSetting = (ToggleButton) view.findViewById(R.id.hourlySettingToggle);
+        ToggleButton fourthSetting = (ToggleButton)
+                view.findViewById(R.id.hourlySettingToggle);
         fourthSetting.setChecked(hourly);
         fourthSetting.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -142,7 +149,8 @@ public class SettingsFragment extends Fragment {
         //set up for fifth option in settings
         //Settings for refreshign or not the graphs.
         boolean refreshes = sharedPref.getBoolean(getString(R.string.refreshes_toggle), false);
-        ToggleButton fifthToggle = (ToggleButton) view.findViewById(R.id.refreshSettingToggle);
+        ToggleButton fifthToggle = (ToggleButton)
+                view.findViewById(R.id.refreshSettingToggle);
         fifthToggle.setChecked(refreshes);
         fifthToggle.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -188,25 +196,30 @@ public class SettingsFragment extends Fragment {
     }
 
     @Override
+    /*
+    * The onResume method for the class. It is triggered when the fragment is resumed.
+    */
     public void onResume() {
         super.onResume();
-        //exiting animation
-        //if not remained in the same one
-        System.out.println("onResume");
         animateEntrance();
     }
 
     @Override
+    /*
+    * The onPause method for the class. It is triggered when the fragment is paused.
+    */
     public void onPause() {
         super.onPause();
-        //exiting animation
-        //if not remained in the same one
-        System.out.println("onPause");
         animateExit();
     }
-
+    
+    /*
+    * The animateEntrance method for the class.
+    * It is used to animate the entrance of the fragment.
+    */
     private void animateEntrance() {
-        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        SharedViewModel model = new ViewModelProvider(requireActivity()).
+                get(SharedViewModel.class);
         int from = model.getFrom().getValue();
         int to = 3;
         if(from == to ) return;
@@ -214,7 +227,8 @@ public class SettingsFragment extends Fragment {
         containerActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
         if(from > 3 ) width = width*(-1);
-        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout, "translationX", width);
+        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout,
+                "translationX", width);
         animatorX.setDuration(0); // Milliseconds
         animatorX.start();
         animatorX = ObjectAnimator.ofFloat(layout, "translationX", 0);
@@ -223,31 +237,29 @@ public class SettingsFragment extends Fragment {
         model.setFrom(3);
     }
 
+    /*
+    * The animateExit method for the class. It is used to animate the exit of the fragment.
+    */
     public void animateExit() {
-        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        SharedViewModel model = new ViewModelProvider(requireActivity()).
+                get(SharedViewModel.class);
         int from = 3;
         int to = model.getTo().getValue();
         if( to == 3 ) return;
-        System.out.println("onAnimateExit1");
         DisplayMetrics displayMetrics = new DisplayMetrics();
         containerActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
         if(to > 3 ) width = width*(-1);
-        System.out.println(width);
-        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout, "translationX", width);
+        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout,
+                "translationX", width);
         animatorX.setDuration(500); // Milliseconds
         animatorX.start();
-        /**
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-         */
-        System.out.println("onAnimateExit2");
 
     }
 
+    /*
+    * The setContainerActivity method for the class. It is used to set the container activity.
+    */
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
     }

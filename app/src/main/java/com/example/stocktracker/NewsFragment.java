@@ -1,12 +1,10 @@
 package com.example.stocktracker;
-
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
@@ -15,11 +13,9 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,9 +25,6 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-
-//import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.HttpClient;
-//import org.apache.commons.io.IOUtils;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,19 +42,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link NewsFragment#newInstance} factory method to
- * create an instance of this fragment.
+/*
+ * @author: Hector Beltran & Marin Maksutaj
+ * @description: This is the NewsFragment class. It is used to display the news
+ *             screen. It provides the users of the app with a list of news articles.
+ *            It also spawns a webView to display the news article.
+ * 
  */
 public class NewsFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     public ListView newsLV = null;
     private String mParam1;
     private String mParam2;
@@ -74,19 +65,18 @@ public class NewsFragment extends Fragment {
     String author[] = {};
     String urls[] = {};
 
+    /*
+    * This is the constructor for the class.
+    */
     public NewsFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment NewsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
+    /*
+    * This is the newInstance method for the class.
+    * It is used to create a new instance of the
+    * class with the given parameters.
+    */
     public static NewsFragment newInstance(String param1, String param2) {
         NewsFragment fragment = new NewsFragment();
         Bundle args = new Bundle();
@@ -97,6 +87,9 @@ public class NewsFragment extends Fragment {
     }
 
     @Override
+    /*
+    * The onCreate method for the class. It is used to initialize the class.
+    */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -106,12 +99,19 @@ public class NewsFragment extends Fragment {
     }
 
     @Override
+    /*
+    * The onResume method for the class. It is triggered when the fragment is resumed.
+    */
     public void onResume() {
         super.onResume();
         animateEntrance();
     }
 
     @Override
+    /*
+    * This is the onCreateView method for the class.
+    * It is used to create the view for the fragment.
+    */
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_news, container, false);
@@ -121,8 +121,8 @@ public class NewsFragment extends Fragment {
         //we read what stock is currently graph, to fetch its news
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         String ticker = sharedPref.getString(getString(R.string.stock_graphed), "AAPL");
-        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-        System.out.println("Model view Working: + " + model.getStock().getValue());
+        SharedViewModel model = new ViewModelProvider(requireActivity())
+                .get(SharedViewModel.class);
         boolean lengthy = sharedPref.getBoolean(getString(R.string.length_news), false);
         String lengthNews = "10";
         if( lengthy ) lengthNews = "20";
@@ -135,12 +135,21 @@ public class NewsFragment extends Fragment {
 
         return v;
     }
+    /*
+    * The setContainerActivity method for the class.
+    * It is used to set the container activity.
+    */
     public void setContainerActivity(Activity containerActivity){
         this.containerActivity = containerActivity;
     }
 
+    /*
+    * The anitmateEntrance method for the class.
+    * It is used to animate the entrance of the fragment.
+    */
     private void animateEntrance() {
-        SharedViewModel model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        SharedViewModel model = new ViewModelProvider(requireActivity()).
+                get(SharedViewModel.class);
         int from = model.getFrom().getValue();
         int to = 2;
         if(from == to ) return;
@@ -148,7 +157,8 @@ public class NewsFragment extends Fragment {
         containerActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
         if(from > 2 ) width = width*(-1);
-        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout, "translationX", width);
+        ObjectAnimator animatorX = ObjectAnimator.ofFloat(layout,
+                "translationX", width);
         animatorX.setDuration(0); // Milliseconds
         animatorX.start();
         animatorX = ObjectAnimator.ofFloat(layout, "translationX", 0);
@@ -157,13 +167,19 @@ public class NewsFragment extends Fragment {
         model.setFrom(2);
     }
 
+    /*
+    * The NewsAPICallManager class. It is used to fetch the news from the API.
+    */
     private class NewsAPICallManager extends AsyncTask<String, String, String> {
 
 
         @Override
+        /*
+         * The doInBackground method for the class. It is used to fetch the news from the API.
+        */
         protected String doInBackground(String... params) {
-            //TODO: failed here on doing API call, this is sample code from documentation"
-            String urlString= "https://api.polygon.io/v2/reference/news?ticker="+params[0]+"&limit="+params[1]+"&apiKey="+getResources().getString(R.string.API_KEY);
+            String urlString= "https://api.polygon.io/v2/reference/news?ticker="+params[0]+
+            "&limit="+params[1]+"&apiKey="+getResources().getString(R.string.API_KEY);
             aList = new ArrayList<HashMap<String, String>>();
             JSONObject result = new JSONObject();
             URL url = null;
@@ -181,7 +197,6 @@ public class NewsFragment extends Fragment {
                         .collect(Collectors.joining("\n"));
                 stream.close();
                 JSONObject obj = new JSONObject(text);
-                //System.out.println(obj);
                 JSONArray r = (JSONArray) obj.get("results");
                 author = new String[r.length()];
                 titles = new String[r.length()];
@@ -207,6 +222,10 @@ public class NewsFragment extends Fragment {
         }
 
         @Override
+        /*
+        * The onPostExecute method for the class. It is used to set the news in the list view.
+         It uses a simple adapter to set the news.
+        */
         protected void onPostExecute(String result){
 
             for(int i = 0 ; i < author.length; i++){
@@ -217,12 +236,12 @@ public class NewsFragment extends Fragment {
             }
             String[] from = {"titleText","authorText"};
             int[] to = {R.id.titleText, R.id.authorText};
-            simpleAdapter = new SimpleAdapter(containerActivity, aList, R.layout.news_row_layout, from , to);
+            simpleAdapter = new SimpleAdapter(containerActivity,
+                    aList, R.layout.news_row_layout, from , to);
             newsLV.setAdapter(simpleAdapter);
             newsLV.setOnItemClickListener(new AdapterView.OnItemClickListener(){
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id){
-                    //TODO:implement this buttons to open up a webview for the URL at index "position"
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(urls[position]));
                     startActivity(intent);

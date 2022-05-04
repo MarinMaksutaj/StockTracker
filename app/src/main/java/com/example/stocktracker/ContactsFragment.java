@@ -1,5 +1,4 @@
 package com.example.stocktracker;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -15,17 +14,17 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
-
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 
 /*
- * @author: Marin Maksutaj
- * @description: This is the ContactFragment Class for the Sketcher app.
+ * @author: Hector Beltran & Marin Maksutaj
+ * @description: This is the ContactsFragment class. It is used to display the contacts
+ *               in the phone. It is also used to send a message to the selected contact.
+ *               It works with gmail, Whatsapp, or any other messaging app.
  */
 public class ContactsFragment extends Fragment {
     private Uri uri = null;
@@ -55,7 +54,8 @@ public class ContactsFragment extends Fragment {
         inflatedView = inflater.inflate(R.layout.fragment_contacts, container, false);
         contactsListView = (ListView) inflatedView.findViewById(R.id.contact_list_view);
         TextView counter = (TextView) inflatedView.findViewById(R.id.sendEmailText);
-        counter.setText(getResources().getString(R.string.sendEmailText) + " ("+selectedIndexList.size()+ ")");
+        counter.setText(getResources().getString(R.string.sendEmailText)
+                + " ("+selectedIndexList.size()+ ")");
         Button sendMailButton = (Button) inflatedView.findViewById(R.id.sendEmailButton);
         sendMailButton.setOnClickListener(new View.OnClickListener(){
            @Override
@@ -81,7 +81,8 @@ public class ContactsFragment extends Fragment {
                     view.setBackgroundColor(getResources().getColor(R.color.theme_light_blue2));
                     selectedIndexList.add(position);
                 }
-                counter.setText(getResources().getString(R.string.sendEmailText) + " ("+selectedIndexList.size()+ ")");
+                counter.setText(getResources().getString(R.string.sendEmailText)
+                        + " ("+selectedIndexList.size()+ ")");
             }
         });
         return inflatedView;
@@ -174,7 +175,7 @@ public class ContactsFragment extends Fragment {
 
     /*
      * Method that sets up the ContactsAdapter
-     */ //TODO: fix a bug where moving the viewlist with selected items on the corners chanches the ones who are selected
+     */ 
     private void setupContactsAdapter() {
         contactsListView =
                 (ListView) inflatedView.findViewById(R.id.contact_list_view);
