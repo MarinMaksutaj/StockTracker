@@ -60,12 +60,14 @@ public class ChartFragment extends Fragment {
     private String tickerGraphed;
     public Activity containerActivity = null;
     private WebView webView;
+    private WebView webView2;
     private WebView tempWebView;
     private TextView titleTextView;
     private GraphAPIManager grapher;
     private SharedViewModel model;
     private ConstraintLayout layout;
-    private Boolean refreshes;
+    private boolean refreshes;
+    private boolean firstWebView;
 
 
     /*
@@ -178,9 +180,11 @@ public class ChartFragment extends Fragment {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_chart, container, false);
         webView = (WebView) view.findViewById(R.id.webview);
+        webView2 = (WebView) view.findViewById(R.id.webview2);
         titleTextView = (TextView) view.findViewById(R.id.textView6);
         layout = view.findViewById(R.id.chartFragment);
         grapher = new GraphAPIManager();
+        firstWebView = false;
 
         //get the correct stock to graph
         File file = new File(containerActivity.getFilesDir(), "stocks.txt");
@@ -376,8 +380,13 @@ public class ChartFragment extends Fragment {
                     containerActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            webView.getSettings().setJavaScriptEnabled(true);
-                            webView.loadData(html, "text/html", "UTF-8");
+                            if ( firstWebView){
+                                webView2.getSettings().setJavaScriptEnabled(true);
+                                webView2.loadData(html, "text/html", "UTF-8");
+                            }else {
+                                webView.getSettings().setJavaScriptEnabled(true);
+                                webView.loadData(html, "text/html", "UTF-8");
+                            }
                         }
                     });
                 } catch (IOException | JSONException e) {
@@ -390,10 +399,20 @@ public class ChartFragment extends Fragment {
 
                 try {
                     //we wait some time before next call
-                    Thread.sleep(2000);
+                    Thread.sleep(300);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
+                //alternate alphas to show proper webview already loaded
+                if ( firstWebView){
+                    webView2.setAlpha(1.0f);
+                    webView.setAlpha(0.0f);
+                }else {
+                    webView.setAlpha(1.0f);
+                    webView2.setAlpha(0.0f);
+                }
+                firstWebView = !firstWebView;
 
             }
         }
